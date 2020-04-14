@@ -7,7 +7,7 @@
       "implementor": "com.reedelk.rest.component.RESTListener",
       "description": "GET Hello World REST Listener",
       "configuration": {"ref": "67b1f84a-b99c-4073-99e6-19220582ed16"},
-      "path": "/message/{name:.*}",
+      "path": "/message",
       "method": "GET",
       "streaming": "AUTO",
       "response": {
@@ -20,16 +20,11 @@
       }
     },
     {
-      "implementor": "com.reedelk.core.component.LoggerComponent",
-      "description": "Log message attributes",
-      "level": "INFO",
-      "message": "#[message.attributes()]"
-    },
-    {
-      "implementor": "com.reedelk.core.component.ScriptEvaluator",
-      "description": "Concatenate 'Hello World' with 'name' path parameter",
-      "mimeType": "text/plain",
-      "script": "helloWorld.js"
+      "implementor": "com.reedelk.mongodb.component.Find",
+      "description": "MongoDB Find",
+      "connectionString": "mongodb://localhost:27017",
+      "collection": "MyCollection",
+      "database": "Hello"
     }
   ]
 }

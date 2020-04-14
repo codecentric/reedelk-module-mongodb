@@ -9,8 +9,7 @@ public class TestConnection {
 
     @Test
     void shouldConnect() throws InterruptedException {
-        MongoClient mongoClient = MongoClients.create("mongodb://172.17.0.2:27017");
-
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
 
         MongoDatabase hello = mongoClient.getDatabase("Hello");

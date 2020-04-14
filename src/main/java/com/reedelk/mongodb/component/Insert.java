@@ -38,14 +38,23 @@ public class Insert implements ProcessorSync {
     @Override
     public Message apply(FlowContext flowContext, Message message) {
         MongoDatabase database = client.getDatabase("mydb");
+
         MongoCollection<Document> collection = database.getCollection("test");
+
         String payload = message.payload(); // TODO: NOte that the payload could be a map as well!
+
         Document document = Document.parse(payload);
 
         collection.insertOne(document);
 
-
         return message;
+    }
+
+    @Override
+    public void dispose() {
+        if (client != null) {
+            client.close();
+        }
     }
 
     public MongoDBConnection getConnection() {
