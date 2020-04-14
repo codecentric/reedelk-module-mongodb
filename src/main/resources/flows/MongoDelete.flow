@@ -1,0 +1,21 @@
+{
+  "id": "7916f3f5-dc00-4491-bbd7-d05e83ca9174",
+  "title": "Mongo Delete",
+  "description": "Mongo Delete Flow",
+  "flow": [{
+    "implementor": "com.reedelk.rest.component.RESTListener",
+    "description": "REST Listener",
+    "configuration": {"ref": "807c8165-a9a9-47ac-80f6-b70a55083038"},
+    "path": "/order",
+    "method": "DELETE",
+    "streaming": "AUTO",
+    "response": {
+      "body": "#[message.payload()]",
+      "status": 200
+    },
+    "errorResponse": {
+      "body": "#[error]",
+      "status": 500
+    }
+  }]
+}

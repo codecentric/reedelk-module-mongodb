@@ -1,13 +1,13 @@
 {
-  "id": "a7449af4-dbc5-4d8e-bb58-f7ea3239ff19",
-  "title": "GET Hello world flow",
-  "description": "Returns 'Hello world' text from GET /api/message",
+  "id": "0dd518c5-724e-4241-b8ee-36005a980d10",
+  "title": "Mogo Find",
+  "description": "Mogo Find Flow",
   "flow": [
     {
       "implementor": "com.reedelk.rest.component.RESTListener",
-      "description": "GET Hello World REST Listener",
-      "configuration": {"ref": "67b1f84a-b99c-4073-99e6-19220582ed16"},
-      "path": "/message",
+      "description": "REST Listener",
+      "configuration": {"ref": "807c8165-a9a9-47ac-80f6-b70a55083038"},
+      "path": "/order",
       "method": "GET",
       "streaming": "AUTO",
       "response": {
@@ -22,9 +22,9 @@
     {
       "implementor": "com.reedelk.mongodb.component.Find",
       "description": "MongoDB Find",
-      "connectionString": "mongodb://localhost:27017",
-      "collection": "MyCollection",
-      "database": "Hello"
+      "connection": {"ref": "9763ad8a-454c-43fb-bdac-814a176f9b26"},
+      "collection": "orders",
+      "findExpression": "#[message.payload()]"
     }
   ]
 }

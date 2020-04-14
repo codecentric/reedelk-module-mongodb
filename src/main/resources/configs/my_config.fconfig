@@ -1,0 +1,7 @@
+{
+  "id": "9763ad8a-454c-43fb-bdac-814a176f9b26",
+  "title": "MongoDB Configuration",
+  "implementor": "com.reedelk.mongodb.component.MongoDBConnection",
+  "connectionURL": "mongodb://localhost:27017",
+  "database": "my_app"
+}

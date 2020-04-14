@@ -1,18 +1,29 @@
 package com.reedelk.mongodb.component;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
-import com.reedelk.runtime.api.annotation.*;
+import com.reedelk.runtime.api.annotation.DefaultValue;
+import com.reedelk.runtime.api.annotation.InitValue;
+import com.reedelk.runtime.api.annotation.ModuleComponent;
+import com.reedelk.runtime.api.annotation.Property;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
+import com.reedelk.runtime.api.script.ScriptEngineService;
+import com.reedelk.runtime.api.script.dynamicvalue.DynamicString;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNull;
 
 @ModuleComponent("MongoDB Find")
 @Component(service = Find.class, scope = ServiceScope.PROTOTYPE)
@@ -21,23 +32,39 @@ public class Find implements ProcessorSync {
     @Property("Connection")
     private MongoDBConnection connection;
 
-    @Property("Connection String")
-    @InitValue("mongodb://localhost:27017")
-    @Example("mongodb://localhost:27017")
-    @Description("Connection string to Mongo DB")
-    private String connectionString;
-
     @Property("Collection")
     private String collection;
 
-    @Property("Database")
-    private String database;
+    @Property("Find expression")
+    @InitValue("#[message.payload()]")
+    @DefaultValue("#[message.payload()")
+    private DynamicString findExpression;
+
+    @Reference
+    private ScriptEngineService scriptService;
 
     private MongoClient client;
+    private String database;
 
     @Override
     public void initialize() {
-        client = MongoClients.create(connectionString);
+
+        requireNotNull(Insert.class, connection, "MongoDB connection must not be null");
+
+        String connectionURL = connection.getConnectionURL();
+        requireNotBlank(Insert.class, connectionURL, "MongoDB connection url must not be empty");
+
+        this.database = connection.getDatabase();
+        requireNotBlank(Insert.class, database, "MongoDB database must not be null");
+
+        requireNotBlank(Insert.class, collection, "MongoDB collection must not be empty");
+
+        MongoClientSettings settings = MongoClientSettings.builder()
+                // TODO: Add credentials
+                .applyConnectionString(new ConnectionString(connectionURL))
+                .build();
+
+        client = MongoClients.create(settings);
     }
 
     @Override
@@ -47,14 +74,29 @@ public class Find implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        FindIterable<Document> documents = mongoCollection.find();
+        return scriptService.evaluate(findExpression, flowContext, message).map(evaluatedFindExpression -> {
 
-        List<String> output = new ArrayList<>();
-        documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+            Document filter = Document.parse(evaluatedFindExpression);
+            FindIterable<Document> documents = mongoCollection.find(filter);
 
-        return MessageBuilder.get()
-                .withList(output, String.class)
-                .build();
+            List<String> output = new ArrayList<>();
+            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+
+            return MessageBuilder.get()
+                    .withList(output, String.class)
+                    .build();
+
+        }).orElseGet(() -> {
+
+            FindIterable<Document> documents = mongoCollection.find();
+
+            List<String> output = new ArrayList<>();
+            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+
+            return MessageBuilder.get()
+                    .withList(output, String.class)
+                    .build();
+        });
     }
 
     @Override
@@ -68,15 +110,11 @@ public class Find implements ProcessorSync {
         this.connection = connection;
     }
 
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
-
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
-    public void setDatabase(String database) {
-        this.database = database;
+    public void setFindExpression(DynamicString findExpression) {
+        this.findExpression = findExpression;
     }
 }
