@@ -2,20 +2,28 @@
   "id": "fdbaccf0-6eb5-43e4-8637-2a5ea26c99cb",
   "title": "Mongo Update",
   "description": "Mongo Update Flow",
-  "flow": [{
-    "implementor": "com.reedelk.rest.component.RESTListener",
-    "description": "REST Listener",
-    "configuration": {"ref": "807c8165-a9a9-47ac-80f6-b70a55083038"},
-    "path": "/order",
-    "method": "PUT",
-    "streaming": "AUTO",
-    "response": {
-      "body": "#[message.payload()]",
-      "status": 200
+  "flow": [
+    {
+      "implementor": "com.reedelk.rest.component.RESTListener",
+      "description": "REST Listener",
+      "configuration": {"ref": "807c8165-a9a9-47ac-80f6-b70a55083038"},
+      "path": "/order",
+      "method": "PUT",
+      "streaming": "AUTO",
+      "response": {
+        "body": "#[message.payload()]",
+        "status": 200
+      },
+      "errorResponse": {
+        "body": "#[error]",
+        "status": 500
+      }
     },
-    "errorResponse": {
-      "body": "#[error]",
-      "status": 500
+    {
+      "implementor": "com.reedelk.mongodb.component.Update",
+      "description": "MongoDB Update",
+      "findFilter": "#[message.payload()]",
+      "updatedDocument": "#[message.payload()]"
     }
-  }]
+  ]
 }
