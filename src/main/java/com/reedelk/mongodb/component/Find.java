@@ -35,10 +35,10 @@ public class Find implements ProcessorSync {
     @Property("Collection")
     private String collection;
 
-    @Property("Find expression")
+    @Property("Find Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicString findExpression;
+    private DynamicString findFilter;
 
     @Reference
     private ScriptEngineService scriptService;
@@ -74,7 +74,7 @@ public class Find implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        return scriptService.evaluate(findExpression, flowContext, message).map(evaluatedFindExpression -> {
+        return scriptService.evaluate(findFilter, flowContext, message).map(evaluatedFindExpression -> {
 
             Document filter = Document.parse(evaluatedFindExpression);
             FindIterable<Document> documents = mongoCollection.find(filter);
@@ -114,7 +114,7 @@ public class Find implements ProcessorSync {
         this.collection = collection;
     }
 
-    public void setFindExpression(DynamicString findExpression) {
-        this.findExpression = findExpression;
+    public void setFindFilter(DynamicString findFilter) {
+        this.findFilter = findFilter;
     }
 }
