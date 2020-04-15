@@ -6,10 +6,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.runtime.api.annotation.DefaultValue;
-import com.reedelk.runtime.api.annotation.InitValue;
-import com.reedelk.runtime.api.annotation.ModuleComponent;
-import com.reedelk.runtime.api.annotation.Property;
+import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.exception.PlatformException;
@@ -37,9 +34,14 @@ import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.require
 public class Update implements ProcessorSync {
 
     @Property("Connection")
+    @Description("MongoDB connection configuration to be used by this update operation. " +
+            "Shared configurations use the same MongoDB client.")
     private ConnectionConfiguration connection;
 
     @Property("Collection")
+    @Hint("MyCollection")
+    @Example("MyCollection")
+    @Description("Sets the name of the MongoDB collection to be used for the update operation.")
     private String collection;
 
     @Property("Find Filter")

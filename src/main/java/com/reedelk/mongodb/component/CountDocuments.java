@@ -5,8 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.runtime.api.annotation.ModuleComponent;
-import com.reedelk.runtime.api.annotation.Property;
+import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.commons.DynamicValueUtils;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.exception.PlatformException;
@@ -27,9 +26,14 @@ import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.require
 public class CountDocuments implements ProcessorSync {
 
     @Property("Connection")
+    @Description("MongoDB connection configuration to be used by this count operation. " +
+            "Shared configurations use the same MongoDB client.")
     private ConnectionConfiguration connection;
 
     @Property("Collection")
+    @Hint("MyCollection")
+    @Example("MyCollection")
+    @Description("Sets the name of the MongoDB collection to be used for the count operation.")
     private String collection;
 
     @Property("Filter")
@@ -68,7 +72,7 @@ public class CountDocuments implements ProcessorSync {
         } else {
             count = mongoCollection.countDocuments();
         }
-        
+
         return MessageBuilder.get()
                 .withJavaObject(count)
                 .build();
