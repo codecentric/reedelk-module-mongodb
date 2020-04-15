@@ -2,14 +2,14 @@ package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.runtime.api.message.Message;
+import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class UpdateTest extends AbstractMongoDBTest {
 
@@ -35,7 +35,7 @@ class UpdateTest extends AbstractMongoDBTest {
     void shouldUpdateCorrectly() {
         // Given
         String filterAsJson = "{ name: 'Olav' }";
-        String updatedDocumentAsJson = "{ $set: { name: 'Josh', surname: 'Red' } }";
+        String updatedDocumentAsJson = "{\"$set\": {\"name\": \"Josh\", \"surname\": \"Red\"}}";
 
         component.setDocument(DynamicObject.from(updatedDocumentAsJson));
         component.setFilter(DynamicObject.from(filterAsJson));
@@ -47,9 +47,19 @@ class UpdateTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
-        List<Map<String, Object>> results = actual.payload();
+        String payload = actual.payload();
+
+        // The payload contains the updated document.
+        assertThat(payload).isEqualToIgnoringWhitespace(updatedDocumentAsJson);
+
+        MessageAttributes attributes = actual.attributes();
+
+        assertThat(attributes).containsEntry("matchedCount", 1L);
+        assertThat(attributes).containsEntry("modifiedCount", 1L);
+        assertThat(attributes).containsEntry("componentName", "Update");
 
         assertExistDocumentWith("{ name: 'Josh', surname: 'Red', age: 55 }");
+        assertExistDocumentWith("{ name:'Mark', surname: 'Anton', age: 32}");
         assertDocumentsCount(2);
     }
 }

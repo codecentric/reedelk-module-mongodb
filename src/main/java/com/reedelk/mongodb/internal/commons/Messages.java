@@ -41,4 +41,25 @@ public class Messages {
             return message;
         }
     }
+
+    public enum Update implements FormattedMessage {
+
+        UPDATE_FILTER_NULL("The Update filter was null. " +
+                "I cannot execute Update operation with a null filter (DynamicValue=[%s])."),
+
+        UPDATE_DOCUMENT_EMPTY("The updated document was null. " +
+                                      "Null documents cannot be updated into MongoDB, " +
+                                      "did you mean to update with an empty document ({}) ? (DynamicValue=[%s]).");
+
+        private String message;
+
+        Update(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String template() {
+            return message;
+        }
+    }
 }
