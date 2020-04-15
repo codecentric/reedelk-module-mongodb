@@ -98,6 +98,15 @@ abstract class AbstractMongoDBTest {
         client.close();
     }
 
+    protected static void assertDocumentsCount(String collection, int expectedCount) {
+        MongoClient client = MongoClients.create(connectionURL);
+        MongoDatabase mongoDatabase = client.getDatabase(database);
+        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        long count = mongoCollection.countDocuments();
+        assertThat(count).isEqualTo(expectedCount);
+        client.close();
+    }
+
     protected static void assertExistDocumentsWith(String collection, String filter, int expectedDocuments) {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);

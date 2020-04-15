@@ -69,6 +69,10 @@ public class Insert implements ProcessorSync {
         if (insertDocument instanceof List) {
             // Insert Many Documents
             List<Object> toInsertList = (List<Object>) insertDocument;
+            if (toInsertList.isEmpty()) {
+                return message;
+            }
+
             List<Document> toInsertDocuments = new ArrayList<>();
             for (Object list : toInsertList) {
                 toInsertDocuments.add(DocumentUtils.from(list));
@@ -81,6 +85,7 @@ public class Insert implements ProcessorSync {
             mongoCollection.insertOne(documentToInsert);
         }
 
+        // TODO: Attributes?
         return message;
     }
 

@@ -6,13 +6,14 @@ import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.*;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Arrays.*;
+import static java.util.Arrays.asList;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class InsertTest extends AbstractMongoDBTest {
@@ -112,5 +113,74 @@ class InsertTest extends AbstractMongoDBTest {
         assertExistDocumentWith(collectionName, "{ surname: 'Ellis' }");
         assertExistDocumentWith(collectionName, "{ age: 65 }");
         assertExistDocumentsWith(collectionName, "{ age: { $gt: 30 } }", 2);
+    }
+
+    @Test
+    void shouldInsertDocumentsFromListOfMaps() {
+        // Given
+        Map<String, Serializable> documentAsMap1 = ImmutableMap.of("name", "John", "age", 45);
+        Map<String, Serializable> documentAsMap2 = ImmutableMap.of("name", "Olav", "age", 35);
+        List<Map<String, Serializable>> documents = asList(documentAsMap1, documentAsMap2);
+
+        component.setDocument(DynamicObject.from(documents));
+        component.initialize();
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        component.apply(context, input);
+
+        // Then
+        assertExistDocumentWith(collectionName, "{ name: 'John' }");
+        assertExistDocumentWith(collectionName, "{ age: 35 }");
+        assertExistDocumentsWith(collectionName, "{ age: { $gt: 35 } }", 1);
+    }
+
+    @Test
+    void shouldInsertDocumentsFromListOfPairs() {
+        // Given
+        Pair<String, Serializable> documentAsPair1 = Pair.create("name", "John");
+        Pair<String, Serializable> documentAsPair2 = Pair.create("name", "Olav");
+        List<Pair<String, Serializable>> documents = asList(documentAsPair1, documentAsPair2);
+
+        component.setDocument(DynamicObject.from(documents));
+        component.initialize();
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        component.apply(context, input);
+
+        // Then
+        assertExistDocumentWith(collectionName, "{ name: 'John' }");
+        assertExistDocumentWith(collectionName, "{ name: 'Olav' }");
+    }
+
+    @Test
+    void shouldNotInsertDocumentsFromEmptyList() {
+        // Given
+        List<Pair<String, Serializable>> documents = Collections.emptyList();
+
+        component.setDocument(DynamicObject.from(documents));
+        component.initialize();
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        component.apply(context, input);
+
+        // Then
+        assertDocumentsCount(collectionName, 0);
+    }
+
+    @Test
+    void shouldNotInsertDocumentsFromNullDocument() {
+        // Given
+        component.setDocument(DynamicObject.from(null));
+        component.initialize();
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        component.apply(context, input);
+
+        // Then
+        assertDocumentsCount(collectionName, 0);
     }
 }
