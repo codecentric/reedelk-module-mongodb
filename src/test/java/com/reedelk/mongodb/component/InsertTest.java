@@ -37,6 +37,7 @@ class InsertTest extends AbstractMongoDBTest {
 
     @AfterEach
     void tearDown() {
+        super.tearDown();
         if (component != null) {
             component.dispose();
         }

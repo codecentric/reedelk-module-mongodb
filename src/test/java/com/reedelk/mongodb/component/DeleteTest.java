@@ -1,21 +1,20 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
+import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doAnswer;
 
 class DeleteTest extends AbstractMongoDBTest {
@@ -33,6 +32,7 @@ class DeleteTest extends AbstractMongoDBTest {
 
     @AfterEach
     void tearDown() {
+        super.tearDown();
         if (component != null) {
             component.dispose();
         }
@@ -126,14 +126,13 @@ class DeleteTest extends AbstractMongoDBTest {
                 .evaluate(filter, context, input);
 
         // When
-        MongoDBUpdateException thrown =
-                assertThrows(MongoDBUpdateException.class, () -> component.apply(context, input));
+        MongoDBDeleteException thrown =
+                assertThrows(MongoDBDeleteException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)
-                .hasMessage("The delete document was null. " +
-                        "Null documents cannot be updated into MongoDB, " +
-                        "did you mean to update with an empty document ({}) ? (DynamicValue=[null]).");
-
+                .hasMessage("The Delete filter was null. " +
+                        "I cannot execute Delete operation with a null filter " +
+                        "(DynamicValue=[#[context.myFilter]]).");
     }
 }

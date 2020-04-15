@@ -79,4 +79,21 @@ public class Messages {
             return message;
         }
     }
+
+    public enum Count implements FormattedMessage {
+
+        COUNT_FILTER_NULL("The Count filter was null. " +
+                "I cannot execute Count operation with a null filter (DynamicValue=[%s]).");
+
+        private String message;
+
+        Count(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String template() {
+            return message;
+        }
+    }
 }
