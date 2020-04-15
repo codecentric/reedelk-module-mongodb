@@ -1,17 +1,25 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.exception.MongoDBFindException;
+import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class FindTest extends AbstractMongoDBTest {
@@ -142,5 +150,28 @@ class FindTest extends AbstractMongoDBTest {
         // Then
         List<Map<String,Object>> results = actual.payload();
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenFindFilterEvaluatesToNull() {
+        // Given
+        DynamicObject filter = DynamicObject.from("#[context.myFilter]", new ModuleContext(10L));
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        doAnswer(invocation -> Optional.empty())
+                .when(scriptService)
+                .evaluate(filter, context, input);
+
+
+
+        // When
+        MongoDBFindException thrown =
+                assertThrows(MongoDBFindException.class, () -> component.apply(context, input));
+
+        // Then
+        assertThat(thrown).hasMessage("The find filter was null. I cannot execute find operation with a null filter (DynamicValue=[#[context.myFilter]]).");
     }
 }

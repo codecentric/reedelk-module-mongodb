@@ -6,9 +6,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
-import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static com.reedelk.mongodb.internal.commons.Messages.Find.FIND_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
@@ -86,10 +87,10 @@ public class Find implements ProcessorSync {
             // Find documents matching the given filter. The filter could be a JSON
             // string, a Map or a Pair type. If the filter is not one of these objects
             // we throw an exception.
-            Object filter = scriptService.evaluate(this.filter, flowContext, message)
-                    .orElseThrow(() -> new PlatformException("Find filter was null or empty"));
+            Object evaluatedFilter = scriptService.evaluate(this.filter, flowContext, message)
+                    .orElseThrow(() -> new MongoDBFindException(FIND_FILTER_NULL.format(this.filter.value())));
 
-            Document documentFilter = DocumentUtils.from(filter);
+            Document documentFilter = DocumentUtils.from(evaluatedFilter);
             documents = mongoDatabaseCollection.find(documentFilter);
 
         } else {
