@@ -8,9 +8,6 @@ import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
@@ -19,7 +16,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class FindTest extends AbstractMongoDBTest {
@@ -32,11 +29,6 @@ class FindTest extends AbstractMongoDBTest {
         AbstractMongoDBTest.setUpAll();
         insertDocument(collectionName, "{name:'Olav', surname: 'Zipser', age: 55}");
         insertDocument(collectionName, "{name:'Mark', surname: 'Anton', age: 32}");
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        removeAllDocuments(collectionName);
     }
 
     @BeforeEach

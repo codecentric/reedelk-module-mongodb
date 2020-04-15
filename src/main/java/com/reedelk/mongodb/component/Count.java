@@ -21,9 +21,9 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
-@ModuleComponent("MongoDB Count Documents")
-@Component(service = CountDocuments.class, scope = ServiceScope.PROTOTYPE)
-public class CountDocuments implements ProcessorSync {
+@ModuleComponent("MongoDB Count")
+@Component(service = Count.class, scope = ServiceScope.PROTOTYPE)
+public class Count implements ProcessorSync {
 
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this count operation. " +

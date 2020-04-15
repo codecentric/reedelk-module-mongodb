@@ -6,7 +6,8 @@ import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
@@ -24,16 +25,6 @@ class InsertTest extends AbstractMongoDBTest {
     private Insert component = new Insert();
     private static String collectionName = "test-collection";
 
-    @BeforeAll
-    public static void setUpAll() {
-        AbstractMongoDBTest.setUpAll();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        removeAllDocuments(collectionName);
-    }
-
     @BeforeEach
     void setUp() {
         super.setUp();
@@ -41,11 +32,6 @@ class InsertTest extends AbstractMongoDBTest {
         component.setCollection(collectionName);
         component.clientFactory = new ClientFactory();
         component.scriptService = scriptService;
-    }
-
-    @AfterEach
-    void tearDown() {
-        removeAllDocuments(collectionName);
     }
 
     @Test

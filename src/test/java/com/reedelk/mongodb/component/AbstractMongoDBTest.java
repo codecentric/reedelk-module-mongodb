@@ -5,9 +5,9 @@ import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicValue;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.internal.Iterables;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.*;
@@ -42,6 +41,7 @@ abstract class AbstractMongoDBTest {
     private static String database;
     private static String connectionURL;
 
+    protected static final String collectionName = "test-collection";
     protected ConnectionConfiguration connectionConfiguration;
 
     @BeforeAll
@@ -51,6 +51,11 @@ abstract class AbstractMongoDBTest {
 
         database = "test-database";
         connectionURL = "mongodb://" + containerIpAddress + ":" + firstMappedPort;
+    }
+
+    @AfterAll
+    protected static void afterAll() {
+        removeAllDocuments(collectionName);
     }
 
     @BeforeEach
@@ -63,6 +68,11 @@ abstract class AbstractMongoDBTest {
             DynamicValue<?> argument = invocation.getArgument(0);
             return Optional.ofNullable(argument.value());
         }).when(scriptService).evaluate(any(DynamicValue.class), eq(context), any(Message.class));
+    }
+
+    @AfterEach
+    void tearDown() {
+        removeAllDocuments(collectionName);
     }
 
     protected void assertExistEntry(List<Map<String, Object>> results, Map<String, Object> expected) {

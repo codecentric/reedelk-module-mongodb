@@ -100,11 +100,11 @@ public class Insert implements ProcessorSync {
         this.connection = connection;
     }
 
-    public void setCollection(String collection) {
-        this.collection = collection;
-    }
-
     public void setDocument(DynamicObject document) {
         this.document = document;
+    }
+
+    public void setCollection(String collection) {
+        this.collection = collection;
     }
 }

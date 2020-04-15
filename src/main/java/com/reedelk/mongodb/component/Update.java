@@ -60,9 +60,9 @@ public class Update implements ProcessorSync {
     private Boolean many;
 
     @Reference
-    private ScriptEngineService scriptService;
+    ScriptEngineService scriptService;
     @Reference
-    private ClientFactory clientFactory;
+    ClientFactory clientFactory;
 
     private MongoClient client;
 
