@@ -1,0 +1,8 @@
+{
+  "id": "decac4b0-5b9d-4385-b44c-40dfe7611447",
+  "title": "My configuration123",
+  "implementor": "com.reedelk.rabbitmq.component.ConnectionFactoryConfiguration",
+  "userName": "sdf",
+  "password": "adsf",
+  "automaticRecovery": true
+}

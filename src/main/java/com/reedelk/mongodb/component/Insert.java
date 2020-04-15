@@ -10,19 +10,22 @@ import com.reedelk.runtime.api.annotation.InitValue;
 import com.reedelk.runtime.api.annotation.ModuleComponent;
 import com.reedelk.runtime.api.annotation.Property;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
-import com.reedelk.runtime.api.script.dynamicvalue.DynamicString;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
-@ModuleComponent("MongoDB Insert")
+@ModuleComponent("MongoDB Insert (One/Many)")
 @Component(service = Insert.class, scope = ServiceScope.PROTOTYPE)
 public class Insert implements ProcessorSync {
 
@@ -57,14 +60,23 @@ public class Insert implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object payload = message.payload();
+        Object insertDocument = scriptService.evaluate(document, flowContext, message)
+                .orElseThrow(() -> new PlatformException("Insert document"));
 
-        // If payload is a list we must insert many?
+        if (insertDocument instanceof List) {
+            // Insert many
+            List<Object> toInsertList = (List<Object>) insertDocument;
+            List<Document> toInsertDocuments = new ArrayList<>();
+            for (Object list : toInsertList) {
+                toInsertDocuments.add(DocumentUtils.from(list));
+            }
+            mongoCollection.insertMany(toInsertDocuments);
 
+        } else {
+            Document documentToInsert = DocumentUtils.from(insertDocument);
 
-        Document documentToInsert = DocumentUtils.from(payload);
-
-        mongoCollection.insertOne(documentToInsert);
+            mongoCollection.insertOne(documentToInsert);
+        }
 
         return message;
     }
@@ -72,6 +84,7 @@ public class Insert implements ProcessorSync {
     @Override
     public void dispose() {
         clientFactory.dispose(this, connection);
+        client = null;
     }
 
     public void setConnection(ConnectionConfiguration connection) {
@@ -80,5 +93,9 @@ public class Insert implements ProcessorSync {
 
     public void setCollection(String collection) {
         this.collection = collection;
+    }
+
+    public void setDocument(DynamicObject document) {
+        this.document = document;
     }
 }

@@ -3,20 +3,15 @@ package com.reedelk.mongodb.component;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.result.DeleteResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.runtime.api.annotation.DefaultValue;
-import com.reedelk.runtime.api.annotation.InitValue;
 import com.reedelk.runtime.api.annotation.ModuleComponent;
 import com.reedelk.runtime.api.annotation.Property;
-import com.reedelk.runtime.api.commons.ImmutableMap;
+import com.reedelk.runtime.api.commons.DynamicValueUtils;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
-import com.reedelk.runtime.api.message.DefaultMessageAttributes;
 import com.reedelk.runtime.api.message.Message;
-import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
@@ -25,14 +20,11 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
-@ModuleComponent("MongoDB Delete (One/Many)")
-@Component(service = Delete.class, scope = ServiceScope.PROTOTYPE)
-public class Delete implements ProcessorSync {
+@ModuleComponent("MongoDB Count Documents")
+@Component(service = CountDocuments.class, scope = ServiceScope.PROTOTYPE)
+public class CountDocuments implements ProcessorSync {
 
     @Property("Connection")
     private ConnectionConfiguration connection;
@@ -40,13 +32,8 @@ public class Delete implements ProcessorSync {
     @Property("Collection")
     private String collection;
 
-    @Property("Delete Filter")
-    @InitValue("#[message.payload()]")
-    @DefaultValue("#[message.payload()")
+    @Property("Filter")
     private DynamicObject filter;
-
-    @Property("Delete Many")
-    private Boolean many;
 
     @Reference
     private ScriptEngineService scriptService;
@@ -69,31 +56,22 @@ public class Delete implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        return scriptService.evaluate(filter, flowContext, message).map(evaluatedDeleteExpression -> {
+        long count;
 
-            Document deleteFilter = DocumentUtils.from(evaluatedDeleteExpression);
+        if (DynamicValueUtils.isNotNullOrBlank(filter)) {
+            Object filterObject = scriptService.evaluate(filter, flowContext, message)
+                    .orElseThrow(() -> new PlatformException("Error could not evaluate filter."));
 
-            DeleteResult deleteResult;
-            if (many != null && many) {
-                deleteResult = mongoCollection.deleteMany(deleteFilter);
-            } else {
-                deleteResult = mongoCollection.deleteOne(deleteFilter);
-            }
+            Document filterDocument = DocumentUtils.from(filterObject);
+            count = mongoCollection.countDocuments(filterDocument);
 
-            long deletedCount = deleteResult.getDeletedCount();
-            boolean acknowledged = deleteResult.wasAcknowledged();
-
-            Map<String, Serializable> componentAttributes = ImmutableMap.of(
-                    "deleteCount", deletedCount,
-                    "acknowledge", acknowledged);
-            MessageAttributes attributes = new DefaultMessageAttributes(Delete.class, componentAttributes);
-
-            return MessageBuilder.get()
-                    .attributes(attributes)
-                    .empty()
-                    .build();
-
-        }).orElseThrow(() -> new PlatformException("Could not delete"));
+        } else {
+            count = mongoCollection.countDocuments();
+        }
+        
+        return MessageBuilder.get()
+                .withJavaObject(count)
+                .build();
     }
 
     @Override
@@ -102,31 +80,15 @@ public class Delete implements ProcessorSync {
         client = null;
     }
 
-    public ConnectionConfiguration getConnection() {
-        return connection;
-    }
-
     public void setConnection(ConnectionConfiguration connection) {
         this.connection = connection;
-    }
-
-    public String getCollection() {
-        return collection;
     }
 
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
-    public DynamicObject getFilter() {
-        return filter;
-    }
-
     public void setFilter(DynamicObject filter) {
         this.filter = filter;
-    }
-
-    public void setMany(Boolean many) {
-        this.many = many;
     }
 }

@@ -69,6 +69,7 @@ public class Find implements ProcessorSync {
     @Override
     public void initialize() {
         requireNotBlank(Find.class, collection, "MongoDB collection must not be empty");
+
         this.client = clientFactory.clientByConfig(this, connection);
     }
 

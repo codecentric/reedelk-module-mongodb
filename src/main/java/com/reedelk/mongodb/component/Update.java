@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.runtime.api.annotation.DefaultValue;
 import com.reedelk.runtime.api.annotation.InitValue;
 import com.reedelk.runtime.api.annotation.ModuleComponent;
@@ -18,18 +19,20 @@ import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
-import com.reedelk.runtime.api.script.dynamicvalue.DynamicString;
+import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
-@ModuleComponent("MongoDB Update")
+@ModuleComponent("MongoDB Update (One/Many)")
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)
 public class Update implements ProcessorSync {
 
@@ -42,12 +45,15 @@ public class Update implements ProcessorSync {
     @Property("Find Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicString findFilter;
+    private DynamicObject findFilter;
 
-    @Property("Updated Document")
+    @Property("Updated Document or Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicString document;
+    private DynamicObject document;
+
+    @Property("Update Many")
+    private Boolean many;
 
     @Reference
     private ScriptEngineService scriptService;
@@ -69,17 +75,41 @@ public class Update implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        String filter = scriptService.evaluate(findFilter, flowContext, message)
+        Object filter = scriptService.evaluate(findFilter, flowContext, message)
                 .orElseThrow(() -> new PlatformException("Find filter"));
 
-        String toUpdate = scriptService.evaluate(document, flowContext, message)
+        Object toUpdate = scriptService.evaluate(document, flowContext, message)
                 .orElseThrow(() -> new PlatformException("Updated document"));
 
 
-        Document toUpdateFilter = Document.parse(filter);
-        Document toUpdateDocument = Document.parse(toUpdate);
+        UpdateResult updateResult;
 
-        UpdateResult updateResult = mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
+        // MongoDB Pipeline
+        if (toUpdate instanceof List) {
+            // The to update document is a pipeline.
+            Document toUpdateFilter = DocumentUtils.from(filter);
+            List<Object> toUpdateList = (List<Object>) toUpdate;
+            List<Document> toUpdateDocuments = new ArrayList<>();
+            for (Object list : toUpdateList) {
+                toUpdateDocuments.add(DocumentUtils.from(list));
+            }
+            if (many != null && many) {
+                updateResult = mongoCollection.updateMany(toUpdateFilter, toUpdateDocuments);
+            } else {
+                updateResult = mongoCollection.updateOne(toUpdateFilter, toUpdateDocuments);
+            }
+
+            // MongoDB Update
+        } else {
+            Document toUpdateFilter = DocumentUtils.from(filter);
+            Document toUpdateDocument = DocumentUtils.from(toUpdate);
+            if (many != null && many) {
+                updateResult = mongoCollection.updateMany(toUpdateFilter, toUpdateDocument);
+            } else {
+                updateResult = mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
+            }
+        }
+
         long matchedCount = updateResult.getMatchedCount();
         long modifiedCount = updateResult.getModifiedCount();
         String upsertedId = updateResult.getUpsertedId().toString();
@@ -88,32 +118,38 @@ public class Update implements ProcessorSync {
                 "matchedCount", matchedCount,
                 "modifiedCount", modifiedCount,
                 "upsertedId", upsertedId);
+
         MessageAttributes attributes = new DefaultMessageAttributes(Delete.class, componentAttributes);
 
         return MessageBuilder.get()
                 .attributes(attributes)
-                .withJson(toUpdate)
+                .empty()
                 .build();
     }
 
     @Override
     public void dispose() {
         clientFactory.dispose(this, connection);
+        client = null;
     }
 
     public void setConnection(ConnectionConfiguration connection) {
         this.connection = connection;
     }
 
+    public void setFindFilter(DynamicObject findFilter) {
+        this.findFilter = findFilter;
+    }
+
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
-    public void setFindFilter(DynamicString findFilter) {
-        this.findFilter = findFilter;
+    public void setDocument(DynamicObject document) {
+        this.document = document;
     }
 
-    public void setDocument(DynamicString document) {
-        this.document = document;
+    public void setMany(Boolean many) {
+        this.many = many;
     }
 }
