@@ -21,6 +21,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -60,9 +61,9 @@ public class Find implements ProcessorSync {
     private DynamicObject filter;
 
     @Reference
-    private ScriptEngineService scriptService;
+    ScriptEngineService scriptService;
     @Reference
-    private ClientFactory clientFactory;
+    ClientFactory clientFactory;
 
     private MongoClient client;
 
@@ -97,11 +98,11 @@ public class Find implements ProcessorSync {
             documents = mongoDatabaseCollection.find();
         }
 
-        List<String> output = new ArrayList<>();
-        documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+        List<Map> output = new ArrayList<>();
+        documents.forEach((Consumer<Document>) output::add);
 
         return MessageBuilder.get()
-                .withList(output, String.class)
+                .withList(output, Map.class)
                 .build();
     }
 
