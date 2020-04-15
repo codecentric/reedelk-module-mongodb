@@ -23,8 +23,7 @@
       "implementor": "com.reedelk.mongodb.component.Delete",
       "description": "MongoDB Delete",
       "connection": {"ref": "9763ad8a-454c-43fb-bdac-814a176f9b26"},
-      "collection": "orders",
-      "deleteFilter": "#[message.payload()]"
+      "collection": "orders"
     }
   ]
 }
