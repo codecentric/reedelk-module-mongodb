@@ -5,9 +5,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
-import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.script.ScriptEngineService;
@@ -20,6 +20,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
 @ModuleComponent("MongoDB Insert (One/Many)")
@@ -64,7 +65,7 @@ public class Insert implements ProcessorSync {
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
         Object insertDocument = scriptService.evaluate(document, flowContext, message)
-                .orElseThrow(() -> new PlatformException("Insert document"));
+                .orElseThrow(() -> new MongoDBInsertException(INSERT_DOCUMENT_EMPTY.format(document.value())));
 
         if (insertDocument instanceof List) {
             // Insert Many Documents

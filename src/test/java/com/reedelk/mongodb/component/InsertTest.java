@@ -1,11 +1,13 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.function.Executable;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class InsertTest extends AbstractMongoDBTest {
@@ -171,16 +175,19 @@ class InsertTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void shouldNotInsertDocumentsFromNullDocument() {
+    void shouldThrowExceptionWhenInsertedDocumentIsNull() {
         // Given
         component.setDocument(DynamicObject.from(null));
         component.initialize();
         Message input = MessageBuilder.get().empty().build();
 
         // When
-        component.apply(context, input);
+        MongoDBInsertException thrown = assertThrows(MongoDBInsertException.class,
+                () -> component.apply(context, input));
 
         // Then
+        assertThat(thrown).hasMessage("The document to insert was null. " +
+                "Null documents cannot be inserted into MongoDB, did you mean to insert an empty document ({}) ? (DynamicValue=[null]).");
         assertDocumentsCount(collectionName, 0);
     }
 }
