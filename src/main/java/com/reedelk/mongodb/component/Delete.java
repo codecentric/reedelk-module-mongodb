@@ -1,12 +1,11 @@
 package com.reedelk.mongodb.component;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
+import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.runtime.api.annotation.DefaultValue;
 import com.reedelk.runtime.api.annotation.InitValue;
 import com.reedelk.runtime.api.annotation.ModuleComponent;
@@ -20,7 +19,7 @@ import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
-import com.reedelk.runtime.api.script.dynamicvalue.DynamicString;
+import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -30,7 +29,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNull;
 
 @ModuleComponent("MongoDB Delete")
 @Component(service = Delete.class, scope = ServiceScope.PROTOTYPE)
@@ -45,50 +43,41 @@ public class Delete implements ProcessorSync {
     @Property("Delete Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicString deleteFilter;
+    private DynamicObject filter;
 
     @Property("Delete Many")
-    private Boolean deleteMany;
+    private Boolean many;
 
     @Reference
     private ScriptEngineService scriptService;
+    @Reference
+    private ClientFactory clientFactory;
 
     private MongoClient client;
-    private String database;
 
     @Override
     public void initialize() {
-
-        requireNotNull(Insert.class, connection, "MongoDB connection must not be null");
-
-        String connectionURL = connection.getConnectionURL();
-        requireNotBlank(Insert.class, connectionURL, "MongoDB connection url must not be empty");
-
-        this.database = connection.getDatabase();
-        requireNotBlank(Insert.class, database, "MongoDB database must not be null");
-
-        requireNotBlank(Insert.class, collection, "MongoDB collection must not be empty");
-
-        MongoClientSettings settings = MongoClientSettings.builder()
-                // TODO: Add credentials
-                .applyConnectionString(new ConnectionString(connectionURL))
-                .build();
-
-        client = MongoClients.create(settings);
+        requireNotBlank(Delete.class, collection, "MongoDB collection must not be empty");
+        this.client = clientFactory.clientByConfig(this, connection);
     }
 
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
-        MongoDatabase mongoDatabase = client.getDatabase(database);
+        MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        return scriptService.evaluate(deleteFilter, flowContext, message).map(evaluatedDeleteExpression -> {
+        return scriptService.evaluate(filter, flowContext, message).map(evaluatedDeleteExpression -> {
 
-            Document deleteFilter = Document.parse(evaluatedDeleteExpression);
+            Document deleteFilter = DocumentUtils.from(evaluatedDeleteExpression);
 
-            DeleteResult deleteResult = mongoCollection.deleteOne(deleteFilter);
+            DeleteResult deleteResult;
+            if (many != null && many) {
+                deleteResult = mongoCollection.deleteMany(deleteFilter);
+            } else {
+                deleteResult = mongoCollection.deleteOne(deleteFilter);
+            }
 
             long deletedCount = deleteResult.getDeletedCount();
             boolean acknowledged = deleteResult.wasAcknowledged();
@@ -108,20 +97,34 @@ public class Delete implements ProcessorSync {
 
     @Override
     public void dispose() {
-        if (client != null) {
-            client.close();
-        }
+        clientFactory.dispose(this, connection);
+    }
+
+    public ConnectionConfiguration getConnection() {
+        return connection;
     }
 
     public void setConnection(ConnectionConfiguration connection) {
         this.connection = connection;
     }
 
+    public String getCollection() {
+        return collection;
+    }
+
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
-    public void setDeleteFilter(DynamicString deleteFilter) {
-        this.deleteFilter = deleteFilter;
+    public DynamicObject getFilter() {
+        return filter;
+    }
+
+    public void setFilter(DynamicObject filter) {
+        this.filter = filter;
+    }
+
+    public void setMany(Boolean many) {
+        this.many = many;
     }
 }

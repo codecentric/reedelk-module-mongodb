@@ -5,13 +5,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
-import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
@@ -19,10 +19,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -59,7 +57,7 @@ public class Find implements ProcessorSync {
             "</ul>")
     @Description("Sets the filter to be applied to the find operation. " +
             "If no filter is present all the documents from the given collection will be retrieved.")
-    private DynamicObject filter; // TODO: Should be dynamic object. If it is a
+    private DynamicObject filter;
 
     @Reference
     private ScriptEngineService scriptService;
@@ -70,7 +68,7 @@ public class Find implements ProcessorSync {
 
     @Override
     public void initialize() {
-        requireNotBlank(Insert.class, collection, "MongoDB collection must not be empty");
+        requireNotBlank(Find.class, collection, "MongoDB collection must not be empty");
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
@@ -88,20 +86,7 @@ public class Find implements ProcessorSync {
             Object filter = scriptService.evaluate(this.filter, flowContext, message)
                     .orElseThrow(() -> new PlatformException("Find filter was null or empty"));
 
-            Document documentFilter;
-            if (filter instanceof String) {
-                 documentFilter = Document.parse((String) filter);
-            } else if (filter instanceof Map) {
-                // TODO: Check map keys are string
-                documentFilter = new Document((Map) filter);
-            } else if (filter instanceof Pair) {
-                // TODO: Check pair keys are string
-                Pair<String, Serializable> filterPair = (Pair) filter;
-                String key = filterPair.key();
-                documentFilter = new Document(key, filterPair.value());
-            } else {
-                throw new PlatformException("Type not expected");
-            }
+            Document documentFilter = DocumentUtils.from(filter);
 
             // Find one with filter
             documents = mongoDatabaseCollection.find(documentFilter);
