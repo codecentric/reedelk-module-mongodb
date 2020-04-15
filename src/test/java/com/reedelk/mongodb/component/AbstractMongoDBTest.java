@@ -55,7 +55,7 @@ abstract class AbstractMongoDBTest {
 
     @AfterAll
     protected static void afterAll() {
-        removeAllDocuments(collectionName);
+        removeAllDocuments();
     }
 
     @BeforeEach
@@ -72,7 +72,7 @@ abstract class AbstractMongoDBTest {
 
     @AfterEach
     void tearDown() {
-        removeAllDocuments(collectionName);
+        removeAllDocuments();
     }
 
     protected void assertExistEntry(List<Map<String, Object>> results, Map<String, Object> expected) {
@@ -89,18 +89,18 @@ abstract class AbstractMongoDBTest {
                 .allMatch(e -> e.getValue().equals(expected.get(e.getKey())));
     }
 
-    protected static void insertDocument(String collection, String document) {
+    protected static void insertDocument(String document) {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collectionName);
         mongoCollection.insertOne(Document.parse(document));
         client.close();
     }
 
-    protected static void assertExistDocumentWith(String collection, String filter) {
+    protected static void assertExistDocumentWith(String filter) {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collectionName);
         FindIterable<Document> documents = mongoCollection.find(Document.parse(filter));
         assertThat(documents)
                 .withFailMessage("Could not find document with filter=[" + filter + "]")
@@ -108,19 +108,19 @@ abstract class AbstractMongoDBTest {
         client.close();
     }
 
-    protected static void assertDocumentsCount(String collection, int expectedCount) {
+    protected static void assertDocumentsCount(int expectedCount) {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collectionName);
         long count = mongoCollection.countDocuments();
         assertThat(count).isEqualTo(expectedCount);
         client.close();
     }
 
-    protected static void assertExistDocumentsWith(String collection, String filter, int expectedDocuments) {
+    protected static void assertExistDocumentsWith(String filter, int expectedDocuments) {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collectionName);
         FindIterable<Document> documents = mongoCollection.find(Document.parse(filter));
         assertThat(documents)
                 .withFailMessage("Could not find ("+ expectedDocuments + ") documents with filter=[" + filter + "]")
@@ -128,7 +128,7 @@ abstract class AbstractMongoDBTest {
         client.close();
     }
 
-    protected static void removeAllDocuments(String collectionName) {
+    protected static void removeAllDocuments() {
         MongoClient client = MongoClients.create(connectionURL);
         MongoDatabase mongoDatabase = client.getDatabase(database);
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collectionName);

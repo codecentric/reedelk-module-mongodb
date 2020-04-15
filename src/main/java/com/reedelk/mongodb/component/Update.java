@@ -6,10 +6,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.Utils;
+import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
-import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.DefaultMessageAttributes;
 import com.reedelk.runtime.api.message.Message;
@@ -26,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
@@ -72,23 +74,23 @@ public class Update implements ProcessorSync {
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
-
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
         Object filter = scriptService.evaluate(this.filter, flowContext, message)
-                .orElseThrow(() -> new PlatformException("Find filter"));
+                .orElseThrow(() -> new MongoDBUpdateException("Find filter"));
 
         Object toUpdate = scriptService.evaluate(document, flowContext, message)
-                .orElseThrow(() -> new PlatformException("Updated document"));
+                .orElseThrow(() -> new MongoDBUpdateException("Updated document"));
 
 
         UpdateResult updateResult;
 
-        // MongoDB Pipeline
+        // Update with pipeline
         if (toUpdate instanceof List) {
             // The to update document is a pipeline.
             Document toUpdateFilter = DocumentUtils.from(filter);
@@ -97,17 +99,17 @@ public class Update implements ProcessorSync {
             for (Object list : toUpdateList) {
                 toUpdateDocuments.add(DocumentUtils.from(list));
             }
-            if (many != null && many) {
+            if (Utils.isTrue(many)) {
                 updateResult = mongoCollection.updateMany(toUpdateFilter, toUpdateDocuments);
             } else {
                 updateResult = mongoCollection.updateOne(toUpdateFilter, toUpdateDocuments);
             }
 
-            // MongoDB Update
         } else {
+            // Update
             Document toUpdateFilter = DocumentUtils.from(filter);
             Document toUpdateDocument = DocumentUtils.from(toUpdate);
-            if (many != null && many) {
+            if (Utils.isTrue(many)) {
                 updateResult = mongoCollection.updateMany(toUpdateFilter, toUpdateDocument);
             } else {
                 updateResult = mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
@@ -116,7 +118,9 @@ public class Update implements ProcessorSync {
 
         long matchedCount = updateResult.getMatchedCount();
         long modifiedCount = updateResult.getModifiedCount();
-        String upsertedId = updateResult.getUpsertedId().toString();
+        String upsertedId = Optional.ofNullable(updateResult.getUpsertedId())
+                .map(Object::toString)
+                .orElse(null);
 
         Map<String, Serializable> componentAttributes = ImmutableMap.of(
                 "matchedCount", matchedCount,

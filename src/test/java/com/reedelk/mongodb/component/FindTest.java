@@ -7,7 +7,10 @@ import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
@@ -22,13 +25,12 @@ import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.o
 class FindTest extends AbstractMongoDBTest {
 
     private Find component = new Find();
-    private static String collectionName = "test-collection";
 
     @BeforeAll
     public static void setUpAll() {
         AbstractMongoDBTest.setUpAll();
-        insertDocument(collectionName, "{name:'Olav', surname: 'Zipser', age: 55}");
-        insertDocument(collectionName, "{name:'Mark', surname: 'Anton', age: 32}");
+        insertDocument("{name:'Olav', surname: 'Zipser', age: 55}");
+        insertDocument("{name:'Mark', surname: 'Anton', age: 32}");
     }
 
     @BeforeEach

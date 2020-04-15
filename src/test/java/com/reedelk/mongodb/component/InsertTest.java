@@ -46,7 +46,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ name: 'John' }");
+        assertExistDocumentWith("{ name: 'John' }");
     }
 
     @Test
@@ -63,7 +63,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ age: 23 }");
+        assertExistDocumentWith("{ age: 23 }");
     }
 
     @Test
@@ -79,7 +79,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ name: 'John' }");
+        assertExistDocumentWith("{ name: 'John' }");
     }
 
     @Test
@@ -98,10 +98,10 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ name: 'John' }");
-        assertExistDocumentWith(collectionName, "{ surname: 'Ellis' }");
-        assertExistDocumentWith(collectionName, "{ age: 65 }");
-        assertExistDocumentsWith(collectionName, "{ age: { $gt: 30 } }", 2);
+        assertExistDocumentWith("{ name: 'John' }");
+        assertExistDocumentWith("{ surname: 'Ellis' }");
+        assertExistDocumentWith("{ age: 65 }");
+        assertExistDocumentsWith("{ age: { $gt: 30 } }", 2);
     }
 
     @Test
@@ -119,9 +119,9 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ name: 'John' }");
-        assertExistDocumentWith(collectionName, "{ age: 35 }");
-        assertExistDocumentsWith(collectionName, "{ age: { $gt: 35 } }", 1);
+        assertExistDocumentWith("{ name: 'John' }");
+        assertExistDocumentWith("{ age: 35 }");
+        assertExistDocumentsWith("{ age: { $gt: 35 } }", 1);
     }
 
     @Test
@@ -139,8 +139,8 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertExistDocumentWith(collectionName, "{ name: 'John' }");
-        assertExistDocumentWith(collectionName, "{ name: 'Olav' }");
+        assertExistDocumentWith("{ name: 'John' }");
+        assertExistDocumentWith("{ name: 'Olav' }");
     }
 
     @Test
@@ -156,7 +156,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.apply(context, input);
 
         // Then
-        assertDocumentsCount(collectionName, 0);
+        assertDocumentsCount(0);
     }
 
     @Test
@@ -173,6 +173,6 @@ class InsertTest extends AbstractMongoDBTest {
         // Then
         assertThat(thrown).hasMessage("The document to insert was null. " +
                 "Null documents cannot be inserted into MongoDB, did you mean to insert an empty document ({}) ? (DynamicValue=[null]).");
-        assertDocumentsCount(collectionName, 0);
+        assertDocumentsCount(0);
     }
 }
