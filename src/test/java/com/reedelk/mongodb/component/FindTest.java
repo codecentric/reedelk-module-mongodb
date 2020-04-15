@@ -8,7 +8,6 @@ import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
-import org.assertj.core.api.Assertions;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,9 +21,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.fail;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 @Testcontainers
