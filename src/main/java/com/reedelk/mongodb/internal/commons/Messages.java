@@ -27,7 +27,7 @@ public class Messages {
 
     public enum Find implements FormattedMessage {
 
-        FIND_FILTER_NULL("The find filter was null. " +
+        FIND_FILTER_NULL("The Find filter was null. " +
                 "I cannot execute find operation with a null filter (DynamicValue=[%s]).");
 
         private String message;

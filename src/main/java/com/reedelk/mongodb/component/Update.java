@@ -22,9 +22,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -72,7 +69,6 @@ public class Update implements ProcessorSync {
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
@@ -86,30 +82,15 @@ public class Update implements ProcessorSync {
                 .orElseThrow(() -> new MongoDBUpdateException(UPDATE_DOCUMENT_EMPTY.format(document.value())));
 
         UpdateResult updateResult;
-        String json = null;
 
-        // Update with pipeline
-        if (toUpdate instanceof List) {
-            // The to update document is a pipeline.
-            Document toUpdateFilter = DocumentUtils.from(evaluatedFilter);
-            List<Object> toUpdateList = (List<Object>) toUpdate;
-            List<Document> toUpdateDocuments = new ArrayList<>();
-            for (Object list : toUpdateList) {
-                toUpdateDocuments.add(DocumentUtils.from(list));
-            }
-            updateResult = Utils.isTrue(many) ?
-                    mongoCollection.updateMany(toUpdateFilter, toUpdateDocuments) :
-                    mongoCollection.updateOne(toUpdateFilter, toUpdateDocuments);
+        // Update without pipeline
+        Document toUpdateFilter = DocumentUtils.from(evaluatedFilter);
+        Document toUpdateDocument = DocumentUtils.from(toUpdate);
 
-        } else {
-            // Update without pipeline
-            Document toUpdateFilter = DocumentUtils.from(evaluatedFilter);
-            Document toUpdateDocument = DocumentUtils.from(toUpdate);
-            json = toUpdateDocument.toJson();
-            updateResult = Utils.isTrue(many) ?
-                    mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
-                    mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
-        }
+        String json = toUpdateDocument.toJson();
+        updateResult = Utils.isTrue(many) ?
+                mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
+                mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
 
         MessageAttributes componentAttributes = Attributes.from(updateResult);
         return MessageBuilder.get()

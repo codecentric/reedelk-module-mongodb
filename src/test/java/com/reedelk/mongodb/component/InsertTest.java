@@ -6,6 +6,7 @@ import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -32,6 +33,13 @@ class InsertTest extends AbstractMongoDBTest {
         component.setCollection(collectionName);
         component.clientFactory = new ClientFactory();
         component.scriptService = scriptService;
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (component != null) {
+            component.dispose();
+        }
     }
 
     @Test
