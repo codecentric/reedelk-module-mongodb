@@ -47,14 +47,16 @@ public class Update implements ProcessorSync {
     @Property("Find Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicObject findFilter;
+    private DynamicObject filter;
 
-    @Property("Updated Document or Filter")
+    @Property("Updated Document")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
     private DynamicObject document;
 
     @Property("Update Many")
+    @Group("Advanced")
+    @Description("If true updates many documents ")
     private Boolean many;
 
     @Reference
@@ -77,7 +79,7 @@ public class Update implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object filter = scriptService.evaluate(findFilter, flowContext, message)
+        Object filter = scriptService.evaluate(this.filter, flowContext, message)
                 .orElseThrow(() -> new PlatformException("Find filter"));
 
         Object toUpdate = scriptService.evaluate(document, flowContext, message)
@@ -139,8 +141,8 @@ public class Update implements ProcessorSync {
         this.connection = connection;
     }
 
-    public void setFindFilter(DynamicObject findFilter) {
-        this.findFilter = findFilter;
+    public void setFilter(DynamicObject filter) {
+        this.filter = filter;
     }
 
     public void setCollection(String collection) {

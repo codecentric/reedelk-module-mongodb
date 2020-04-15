@@ -24,8 +24,7 @@
       "description": "MongoDB Update",
       "connection": {"ref": "9763ad8a-454c-43fb-bdac-814a176f9b26"},
       "collection": "orders",
-      "findFilter": "#[message.payload()]",
-      "updatedDocument": "#[message.payload()]"
+      "findFilter": "#[message.payload()]"
     }
   ]
 }

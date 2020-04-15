@@ -7,7 +7,6 @@ import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.function.Executable;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
@@ -16,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class InsertTest extends AbstractMongoDBTest {

@@ -23,7 +23,8 @@
       "implementor": "com.reedelk.mongodb.component.Insert",
       "description": "MongoDB Insert",
       "connection": {"ref": "9763ad8a-454c-43fb-bdac-814a176f9b26"},
-      "collection": "orders"
+      "collection": "orders",
+      "document": "#[]"
     }
   ]
 }
