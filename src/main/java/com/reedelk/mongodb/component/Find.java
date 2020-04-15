@@ -112,15 +112,15 @@ public class Find implements ProcessorSync {
         client = null;
     }
 
+    public void setConnection(ConnectionConfiguration connection) {
+        this.connection = connection;
+    }
+
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
     public void setFilter(DynamicObject filter) {
         this.filter = filter;
-    }
-
-    public void setConnection(ConnectionConfiguration connection) {
-        this.connection = connection;
     }
 }

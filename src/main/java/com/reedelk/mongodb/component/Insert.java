@@ -86,6 +86,7 @@ public class Insert implements ProcessorSync {
             mongoCollection.insertOne(documentToInsert);
         }
 
+        // TODO: Also the payload should contain the inserted document.
         // TODO: Attributes?
         return message;
     }
