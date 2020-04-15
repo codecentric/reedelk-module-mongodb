@@ -24,7 +24,7 @@
       "description": "MongoDB Find",
       "connection": {"ref": "9763ad8a-454c-43fb-bdac-814a176f9b26"},
       "collection": "orders",
-      "findExpression": "#[message.payload()]"
+      "filter": ""
     }
   ]
 }

@@ -25,7 +25,7 @@ import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.require
 public class Insert implements ProcessorSync {
 
     @Property("Connection")
-    private MongoDBConnection connection;
+    private ConnectionConfiguration connection;
 
     @Property("Collection")
     private String collection;
@@ -93,7 +93,7 @@ public class Insert implements ProcessorSync {
         }
     }
 
-    public void setConnection(MongoDBConnection connection) {
+    public void setConnection(ConnectionConfiguration connection) {
         this.connection = connection;
     }
 

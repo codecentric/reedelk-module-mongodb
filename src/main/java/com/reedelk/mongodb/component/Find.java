@@ -1,13 +1,13 @@
 package com.reedelk.mongodb.component;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.*;
-import com.reedelk.runtime.api.annotation.DefaultValue;
-import com.reedelk.runtime.api.annotation.InitValue;
-import com.reedelk.runtime.api.annotation.ModuleComponent;
-import com.reedelk.runtime.api.annotation.Property;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -23,98 +23,100 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNull;
+import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
 @ModuleComponent("MongoDB Find")
 @Component(service = Find.class, scope = ServiceScope.PROTOTYPE)
 public class Find implements ProcessorSync {
 
     @Property("Connection")
-    private MongoDBConnection connection;
+    @Description("MongoDB connection configuration to be used by this find operation. " +
+            "Shared configurations use the same MongoDB client.")
+    private ConnectionConfiguration connection;
 
     @Property("Collection")
+    @Hint("MyCollection")
+    @Example("MyCollection")
+    @Description("Sets the name of the MongoDB collection to be used for the find operation.")
     private String collection;
 
     @Property("Find Filter")
-    @InitValue("#[message.payload()]")
-    @DefaultValue("#[message.payload()")
-    private DynamicString findFilter;
+    @Hint("{ \"name.last\": \"Hopper\" }")
+    @Example("<ul>" +
+            "<li>{ _id: 5 }</li>" +
+            "<li>{ \"name.last\": \"Hopper\" }</li>" +
+            "<li>{ _id: { $in: [ 5, ObjectId(\"507c35dd8fada716c89d0013\") ] } }</li>" +
+            "<li>{ birth: { $gt: new Date('1950-01-01') } }</li>" +
+            "<li>{ \"name.last\": { $regex: /^N/ } }</li>" +
+            "<li>{\n" +
+            "   birth: { $gt: new Date('1920-01-01') },\n" +
+            "   death: { $exists: false }\n" +
+            "}</li>" +
+            "<li><code>context.myFindFilter</code></li>" +
+            "</ul>")
+    @Description("Sets the filter to be applied to the find operation. " +
+            "If no filter is present all the documents from the given collection will be retrieved.")
+    private DynamicString filter;
 
     @Reference
     private ScriptEngineService scriptService;
+    @Reference
+    private ClientFactory clientFactory;
 
     private MongoClient client;
-    private String database;
 
     @Override
     public void initialize() {
-
-        requireNotNull(Insert.class, connection, "MongoDB connection must not be null");
-
-        String connectionURL = connection.getConnectionURL();
-        requireNotBlank(Insert.class, connectionURL, "MongoDB connection url must not be empty");
-
-        this.database = connection.getDatabase();
-        requireNotBlank(Insert.class, database, "MongoDB database must not be null");
-
         requireNotBlank(Insert.class, collection, "MongoDB collection must not be empty");
-
-        MongoClientSettings settings = MongoClientSettings.builder()
-                // TODO: Add credentials
-                .applyConnectionString(new ConnectionString(connectionURL))
-                .build();
-
-        client = MongoClients.create(settings);
+        this.client = clientFactory.clientByConfig(this, connection);
     }
 
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
-        MongoDatabase mongoDatabase = client.getDatabase(database);
+        MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
 
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
+        MongoCollection<Document> mongoDatabaseCollection = mongoDatabase.getCollection(collection);
 
-        return scriptService.evaluate(findFilter, flowContext, message).map(evaluatedFindExpression -> {
+        FindIterable<Document> documents;
 
-            Document filter = Document.parse(evaluatedFindExpression);
-            FindIterable<Document> documents = mongoCollection.find(filter);
+        if (isNotNullOrBlank(filter)) {
+            // Find documents matching find filter
+            String filter = scriptService.evaluate(this.filter, flowContext, message)
+                    .orElseThrow(() -> new PlatformException("Find filter was null or empty"));
 
-            List<String> output = new ArrayList<>();
-            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+            // Find one with filter
+            Document documentFilter = Document.parse(filter);
+            documents = mongoDatabaseCollection.find(documentFilter);
 
-            return MessageBuilder.get()
-                    .withList(output, String.class)
-                    .build();
+        } else {
+            // Find all (no filter was provided)
+            documents = mongoDatabaseCollection.find();
+        }
 
-        }).orElseGet(() -> {
+        List<String> output = new ArrayList<>();
+        documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
 
-            FindIterable<Document> documents = mongoCollection.find();
-
-            List<String> output = new ArrayList<>();
-            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
-
-            return MessageBuilder.get()
-                    .withList(output, String.class)
-                    .build();
-        });
+        return MessageBuilder.get()
+                .withList(output, String.class)
+                .build();
     }
 
     @Override
     public void dispose() {
-        if (client != null) {
-            client.close();
-        }
-    }
-
-    public void setConnection(MongoDBConnection connection) {
-        this.connection = connection;
+        clientFactory.dispose(this, connection);
+        client = null;
     }
 
     public void setCollection(String collection) {
         this.collection = collection;
     }
 
-    public void setFindFilter(DynamicString findFilter) {
-        this.findFilter = findFilter;
+    public void setFilter(DynamicString filter) {
+        this.filter = filter;
+    }
+
+    public void setConnection(ConnectionConfiguration connection) {
+        this.connection = connection;
     }
 }
