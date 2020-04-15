@@ -62,4 +62,21 @@ public class Messages {
             return message;
         }
     }
+
+    public enum Delete implements FormattedMessage {
+
+        DELETE_FILTER_NULL("The Delete filter was null. " +
+                "I cannot execute Delete operation with a null filter (DynamicValue=[%s]).");
+
+        private String message;
+
+        Delete(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String template() {
+            return message;
+        }
+    }
 }

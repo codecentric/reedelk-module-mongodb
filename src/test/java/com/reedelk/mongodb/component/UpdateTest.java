@@ -33,6 +33,7 @@ class UpdateTest extends AbstractMongoDBTest {
 
     @AfterEach
     void tearDown() {
+        super.tearDown();
         if (component != null) {
             component.dispose();
         }
@@ -74,13 +75,13 @@ class UpdateTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenFilterEvaluatesToNull() {
+    void shouldThrowExceptionWhenDocumentEvaluatesToNull() {
         // Given
         String filterAsJson = "{ name: 'Olav' }";
         DynamicObject document = DynamicObject.from(null);
 
-        component.setDocument(document);
         component.setFilter(DynamicObject.from(filterAsJson));
+        component.setDocument(document);
         component.initialize();
 
         Message input = MessageBuilder.get().empty().build();
@@ -95,15 +96,20 @@ class UpdateTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The Update filter was null. " +
-                        "I cannot execute Update operation with a null filter " +
-                        "(DynamicValue=[#[context.myFilter]]).");
+                .hasMessage("The updated document was null. " +
+                        "Null documents cannot be updated into MongoDB, " +
+                        "did you mean to update with an empty document ({}) ? (DynamicValue=[null]).");
     }
 
     @Test
-    void shouldThrowExceptionWhenDocumentEvaluatesToNull() {
+    void shouldThrowExceptionWhenFilterEvaluatesToNull() {
         // Given
         DynamicObject filter = DynamicObject.from("#[context.myFilter]", new ModuleContext(10L));
+
+        String updatedDocumentAsJson = "{\"$set\": {\"name\": \"Josh\", \"surname\": \"Red\"}}";
+        DynamicObject document = DynamicObject.from(updatedDocumentAsJson);
+
+        component.setDocument(document);
         component.setFilter(filter);
         component.initialize();
 
@@ -119,9 +125,9 @@ class UpdateTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The updated document was null. " +
-                        "Null documents cannot be updated into MongoDB, " +
-                        "did you mean to update with an empty document ({}) ? (DynamicValue=[null]).");
+                .hasMessage("The Update filter was null. " +
+                        "I cannot execute Update operation with a null filter " +
+                        "(DynamicValue=[#[context.myFilter]]).");
     }
 
     @Test

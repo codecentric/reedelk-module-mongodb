@@ -6,10 +6,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.Utils;
+import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
-import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.DefaultMessageAttributes;
 import com.reedelk.runtime.api.message.Message;
@@ -25,6 +26,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
+import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 
 @ModuleComponent("MongoDB Delete (One/Many)")
@@ -51,16 +53,15 @@ public class Delete implements ProcessorSync {
     private Boolean many;
 
     @Reference
-    private ScriptEngineService scriptService;
+    ScriptEngineService scriptService;
     @Reference
-    private ClientFactory clientFactory;
+    ClientFactory clientFactory;
 
     private MongoClient client;
 
     @Override
     public void initialize() {
         requireNotBlank(Delete.class, collection, "MongoDB collection must not be empty");
-
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
@@ -68,34 +69,30 @@ public class Delete implements ProcessorSync {
     public Message apply(FlowContext flowContext, Message message) {
 
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
-
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        return scriptService.evaluate(filter, flowContext, message).map(evaluatedDeleteExpression -> {
+        Object evaluatedFilter = scriptService.evaluate(filter, flowContext, message)
+                .orElseThrow(() -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(filter.value())));
 
-            Document deleteFilter = DocumentUtils.from(evaluatedDeleteExpression);
+        Document deleteFilter = DocumentUtils.from(evaluatedFilter);
 
-            DeleteResult deleteResult;
-            if (many != null && many) {
-                deleteResult = mongoCollection.deleteMany(deleteFilter);
-            } else {
-                deleteResult = mongoCollection.deleteOne(deleteFilter);
-            }
+        DeleteResult deleteResult = Utils.isTrue(many) ?
+                mongoCollection.deleteMany(deleteFilter) :
+                mongoCollection.deleteOne(deleteFilter);
 
-            long deletedCount = deleteResult.getDeletedCount();
-            boolean acknowledged = deleteResult.wasAcknowledged();
+        long deletedCount = deleteResult.getDeletedCount();
+        boolean acknowledged = deleteResult.wasAcknowledged();
 
-            Map<String, Serializable> componentAttributes = ImmutableMap.of(
-                    "deleteCount", deletedCount,
-                    "acknowledge", acknowledged);
-            MessageAttributes attributes = new DefaultMessageAttributes(Delete.class, componentAttributes);
+        Map<String, Serializable> componentAttributes = ImmutableMap.of(
+                "deleteCount", deletedCount,
+                "acknowledge", acknowledged);
+        MessageAttributes attributes = new DefaultMessageAttributes(Delete.class, componentAttributes);
 
-            return MessageBuilder.get()
-                    .attributes(attributes)
-                    .empty()
-                    .build();
-
-        }).orElseThrow(() -> new PlatformException("Could not delete"));
+        // TODO: Check return type;
+        return MessageBuilder.get()
+                .attributes(attributes)
+                .empty()
+                .build();
     }
 
     @Override
@@ -104,24 +101,12 @@ public class Delete implements ProcessorSync {
         client = null;
     }
 
-    public ConnectionConfiguration getConnection() {
-        return connection;
-    }
-
     public void setConnection(ConnectionConfiguration connection) {
         this.connection = connection;
     }
 
-    public String getCollection() {
-        return collection;
-    }
-
     public void setCollection(String collection) {
         this.collection = collection;
-    }
-
-    public DynamicObject getFilter() {
-        return filter;
     }
 
     public void setFilter(DynamicObject filter) {
