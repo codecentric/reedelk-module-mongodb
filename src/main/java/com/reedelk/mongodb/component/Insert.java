@@ -43,9 +43,9 @@ public class Insert implements ProcessorSync {
     private DynamicObject document;
 
     @Reference
-    private ScriptEngineService scriptService;
+    ScriptEngineService scriptService;
     @Reference
-    private ClientFactory clientFactory;
+    ClientFactory clientFactory;
 
     private MongoClient client;
 
@@ -55,6 +55,7 @@ public class Insert implements ProcessorSync {
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
@@ -66,7 +67,7 @@ public class Insert implements ProcessorSync {
                 .orElseThrow(() -> new PlatformException("Insert document"));
 
         if (insertDocument instanceof List) {
-            // Insert many
+            // Insert Many Documents
             List<Object> toInsertList = (List<Object>) insertDocument;
             List<Document> toInsertDocuments = new ArrayList<>();
             for (Object list : toInsertList) {
@@ -75,8 +76,8 @@ public class Insert implements ProcessorSync {
             mongoCollection.insertMany(toInsertDocuments);
 
         } else {
+            // Insert One Document
             Document documentToInsert = DocumentUtils.from(insertDocument);
-
             mongoCollection.insertOne(documentToInsert);
         }
 

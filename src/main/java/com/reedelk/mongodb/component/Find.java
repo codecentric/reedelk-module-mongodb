@@ -70,31 +70,30 @@ public class Find implements ProcessorSync {
     @Override
     public void initialize() {
         requireNotBlank(Find.class, collection, "MongoDB collection must not be empty");
-
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Message apply(FlowContext flowContext, Message message) {
 
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
-
         MongoCollection<Document> mongoDatabaseCollection = mongoDatabase.getCollection(collection);
 
         FindIterable<Document> documents;
 
         if (isNotNullOrBlank(filter)) {
-            // Find documents matching find filter
+            // Find documents matching the given filter. The filter could be a JSON
+            // string, a Map or a Pair type. If the filter is not one of these objects
+            // we throw an exception.
             Object filter = scriptService.evaluate(this.filter, flowContext, message)
                     .orElseThrow(() -> new PlatformException("Find filter was null or empty"));
 
             Document documentFilter = DocumentUtils.from(filter);
-
-            // Find one with filter
             documents = mongoDatabaseCollection.find(documentFilter);
 
         } else {
-            // Find all (no filter was provided)
+            // Filter was not given, we find all the documents in the collection.
             documents = mongoDatabaseCollection.find();
         }
 

@@ -1,71 +1,55 @@
 package com.reedelk.mongodb.component;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
-import org.bson.Document;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import com.reedelk.runtime.api.message.content.Pair;
+import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
+import org.junit.jupiter.api.*;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
-@Testcontainers
-@ExtendWith(MockitoExtension.class)
-class FindTest {
-
-    @Mock
-    private FlowContext context;
-
-
-    @Container
-    public GenericContainer<?> mongodb = new GenericContainer<>("mongo:4.0.4")
-            .withExposedPorts(27017);
+class FindTest extends AbstractMongoDBTest {
 
     private Find component = new Find();
-    private String connectionURL;
-    private String database;
+    private static String collectionName = "test-collection";
+
+    @BeforeAll
+    public static void setUpAll() {
+        AbstractMongoDBTest.setUpAll();
+        insertDocument(collectionName, "{name:'Olav', surname: 'Zipser', age: 55}");
+        insertDocument(collectionName, "{name:'Mark', surname: 'Anton', age: 32}");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        removeAllDocuments(collectionName);
+    }
 
     @BeforeEach
     void setUp() {
-        String containerIpAddress = mongodb.getContainerIpAddress();
-        Integer firstMappedPort = mongodb.getFirstMappedPort();
-        this.connectionURL = "mongodb://" + containerIpAddress + ":" + firstMappedPort;
-        this.database = "test-database";
-        ConnectionConfiguration connectionConfiguration = new ConnectionConfiguration();
-        connectionConfiguration.setConnectionURL(connectionURL);
-        connectionConfiguration.setDatabase(database);
+        super.setUp();
         component.setConnection(connectionConfiguration);
+        component.setCollection(collectionName);
         component.clientFactory = new ClientFactory();
+        component.scriptService = scriptService;
     }
 
     @AfterEach
     void tearDown() {
-        if (component != null) component.dispose();
+        if (component != null) {
+            component.dispose();
+        }
     }
 
     @Test
     void shouldCorrectlyFindItemsWithoutFilter() {
         // Given
-        String collectionName = "test-collection";
-        insert(connectionURL, database, collectionName, "{name:'Olav', surname: 'Zipser'}");
-        insert(connectionURL, database, collectionName, "{name:'Mark', surname: 'Anton'}");
-        component.setCollection(collectionName);
         component.initialize();
 
         Message message = MessageBuilder.get().empty().build();
@@ -76,29 +60,87 @@ class FindTest {
         // Then
         List<Map<String, Object>> results = actual.payload();
 
-        assertExistEntry(results, of("name", "Olav", "surname", "Zipser"));
-        assertExistEntry(results, of("name", "Mark", "surname", "Anton"));
+        assertExistEntry(results, of("name", "Olav", "surname", "Zipser", "age", 55));
+        assertExistEntry(results, of("name", "Mark", "surname", "Anton", "age", 32));
     }
 
-    private void assertExistEntry(List<Map<String, Object>> results, Map<String, Object> expected) {
-        for (Map<String, Object> result : results) {
-            if (match(result, expected)) return;
-        }
-        fail("Could not find matching item");
+    // Filter is JSON string
+    @Test
+    void shouldCorrectlyFindItemsWithStringJSONFilter() {
+        // Given
+        String filterAsString = "{ 'name': 'Olav' }";
+        DynamicObject filter = DynamicObject.from(filterAsString);
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String,Object>> results = actual.payload();
+
+        assertThat(results).hasSize(1);
+        assertExistEntry(results, of("name", "Olav", "surname", "Zipser", "age", 55));
     }
 
-    private boolean match(Map<String,Object> actual, Map<String, Object> expected) {
-        if (actual.size() -1 != expected.size()) return false; // We exclude _id which is randomly generated.
-        return actual.entrySet().stream()
-                .filter(stringObjectEntry -> !stringObjectEntry.getKey().equals("_id"))
-                .allMatch(e -> e.getValue().equals(expected.get(e.getKey())));
+    // Filter is a Map
+    @Test
+    void shouldCorrectlyFindItemsWithMapFilter() {
+        // Given
+        Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
+        DynamicObject filter = DynamicObject.from(filterAsMap);
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String,Object>> results = actual.payload();
+
+        assertThat(results).hasSize(1);
+        assertExistEntry(results, of("name", "Olav", "surname", "Zipser", "age", 55));
     }
 
-    private void insert(String connectionURL, String database, String collection, String data) {
-        MongoClient client = MongoClients.create(connectionURL);
-        MongoDatabase mongoDatabase = client.getDatabase(database);
-        MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
-        mongoCollection.insertOne(Document.parse(data));
-        client.close();
+    // Filter is a Pair
+    @Test
+    void shouldCorrectlyFindItemsWithPair() {
+        // Given
+        Pair<String, Integer> filterAsPair = Pair.create("age", 32);
+        DynamicObject filter = DynamicObject.from(filterAsPair);
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String,Object>> results = actual.payload();
+
+        assertThat(results).hasSize(1);
+        assertExistEntry(results, of("name", "Mark", "surname", "Anton", "age", 32));
+    }
+
+    @Test
+    void shouldReturnEmptyResultsWithFilter() {
+        // Given
+        DynamicObject filter = DynamicObject.from("{ 'name': 'NotExistent' }");
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String,Object>> results = actual.payload();
+        assertThat(results).isEmpty();
     }
 }
