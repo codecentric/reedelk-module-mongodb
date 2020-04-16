@@ -8,6 +8,7 @@ import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.MimeType;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,7 +177,7 @@ class FindTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void shouldCorrectlyReturnResultsAsJsonByDefault() {
+    void shouldCorrectlyReturnResultsAsJsonByDefault() throws JSONException {
         // Given
         Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
         DynamicObject filter = DynamicObject.from(filterAsMap);
