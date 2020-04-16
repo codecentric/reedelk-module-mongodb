@@ -12,6 +12,7 @@ import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
+import com.reedelk.runtime.api.message.content.MimeType;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
@@ -61,6 +62,14 @@ public class Find implements ProcessorSync {
             "If no filter is present all the documents from the given collection will be retrieved.")
     private DynamicObject filter;
 
+    @Property("Out mime type")
+    @DefaultValue(MimeType.AsString.APPLICATION_JSON)
+    @Combo(comboValues = {
+            MimeType.AsString.APPLICATION_JSON,
+            MimeType.AsString.APPLICATION_JAVA})
+    @Description("Sets the mime type of the output. If output is ")
+    private String mimeType;
+
     @Reference
     ScriptEngineService scriptService;
     @Reference
@@ -98,12 +107,25 @@ public class Find implements ProcessorSync {
             documents = mongoDatabaseCollection.find();
         }
 
-        List<Map> output = new ArrayList<>();
-        documents.forEach((Consumer<Document>) output::add);
+        MimeType parsedMimeType = MimeType.parse(this.mimeType, MimeType.APPLICATION_JSON);
 
-        return MessageBuilder.get()
-                .withList(output, Map.class)
-                .build();
+        if (MimeType.APPLICATION_JSON.equals(parsedMimeType)) {
+            // Output is JSON
+            List<String> output = new ArrayList<>();
+            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+            return MessageBuilder.get()
+                    .withJson(output.toString())
+                    .build();
+
+        } else {
+            // Application java
+            List<Map> output = new ArrayList<>();
+            documents.forEach((Consumer<Document>) output::add);
+
+            return MessageBuilder.get()
+                    .withList(output, Map.class)
+                    .build();
+        }
     }
 
     @Override
@@ -122,5 +144,9 @@ public class Find implements ProcessorSync {
 
     public void setFilter(DynamicObject filter) {
         this.filter = filter;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 }
