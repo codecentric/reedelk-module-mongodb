@@ -16,12 +16,15 @@
     <artifactId>module-mongodb</artifactId>
 
     <properties>
+        <assertj.version>3.11.1</assertj.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <junit.version>5.5.2</junit.version>
-        <assertj.version>3.11.1</assertj.version>
         <mockito.version>2.23.0</mockito.version>
+        <mongo.driver.version>3.12.3</mongo.driver.version>
+        <junit.version>5.5.2</junit.version>
+        <jsonassert.version>1.5.0</jsonassert.version>
+        <testcontainers.version>1.14.0</testcontainers.version>
     </properties>
 
     <repositories>
@@ -104,7 +107,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.3</version>
+            <version>${mongo.driver.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -141,13 +144,19 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.14.0</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.14.0</version>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>${jsonassert.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

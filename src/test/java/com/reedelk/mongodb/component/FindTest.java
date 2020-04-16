@@ -5,12 +5,15 @@ import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
+import com.reedelk.runtime.api.message.content.MimeType;
 import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
@@ -52,6 +55,7 @@ class FindTest extends AbstractMongoDBTest {
     @Test
     void shouldCorrectlyFindItemsWithoutFilter() {
         // Given
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.initialize();
 
         Message message = MessageBuilder.get().empty().build();
@@ -72,6 +76,7 @@ class FindTest extends AbstractMongoDBTest {
         // Given
         String filterAsString = "{ 'name': 'Olav' }";
         DynamicObject filter = DynamicObject.from(filterAsString);
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.setFilter(filter);
         component.initialize();
 
@@ -93,6 +98,7 @@ class FindTest extends AbstractMongoDBTest {
         // Given
         Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
         DynamicObject filter = DynamicObject.from(filterAsMap);
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.setFilter(filter);
         component.initialize();
 
@@ -114,6 +120,7 @@ class FindTest extends AbstractMongoDBTest {
         // Given
         Pair<String, Integer> filterAsPair = Pair.create("age", 32);
         DynamicObject filter = DynamicObject.from(filterAsPair);
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.setFilter(filter);
         component.initialize();
 
@@ -133,6 +140,7 @@ class FindTest extends AbstractMongoDBTest {
     void shouldReturnEmptyResultsWithFilter() {
         // Given
         DynamicObject filter = DynamicObject.from("{ 'name': 'NotExistent' }");
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.setFilter(filter);
         component.initialize();
 
@@ -165,5 +173,25 @@ class FindTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown).hasMessage("The Find filter was null. I cannot execute find operation with a null filter (DynamicValue=[#[context.myFilter]]).");
+    }
+
+    @Test
+    void shouldCorrectlyReturnResultsAsJsonByDefault() {
+        // Given
+        Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
+        DynamicObject filter = DynamicObject.from(filterAsMap);
+        component.setFilter(filter);
+        component.initialize();
+
+        Message input = MessageBuilder.get().empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        String actualJson = actual.payload();
+
+        String expectedJson = "[{ \"name\": \"Olav\", \"surname\": \"Zipser\", \"age\": 55}]";
+        JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.LENIENT);
     }
 }

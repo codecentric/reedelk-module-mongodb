@@ -67,7 +67,11 @@ public class Find implements ProcessorSync {
     @Combo(comboValues = {
             MimeType.AsString.APPLICATION_JSON,
             MimeType.AsString.APPLICATION_JAVA})
-    @Description("Sets the mime type of the output. If output is ")
+    @Description("Sets the mime type of the output. If output is application/json, " +
+            "then the content is a JSON String containing the results of the find operation. " +
+            "Use this output type if you don't need to further process the result. If output is application/java, " +
+            "the output is a List of Map which can be used righ away from the script language to do further processing " +
+            "of the results.")
     private String mimeType;
 
     @Reference
@@ -121,7 +125,6 @@ public class Find implements ProcessorSync {
             // Application java
             List<Map> output = new ArrayList<>();
             documents.forEach((Consumer<Document>) output::add);
-
             return MessageBuilder.get()
                     .withList(output, Map.class)
                     .build();
