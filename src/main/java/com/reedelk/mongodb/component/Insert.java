@@ -5,7 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.mongodb.internal.commons.ObjectIdReplacer;
+import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -21,6 +21,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -109,14 +110,15 @@ public class Insert implements ProcessorSync {
 
         mongoCollection.insertMany(toInsertDocuments);
 
-        List<Object> ids = toInsertDocuments.stream()
-                .map(document -> document.get(ObjectIdReplacer.OBJECT_ID_PROPERTY))
+        List<Object> insertIds = toInsertDocuments.stream()
+                .map(document -> document.get(ObjectIdUtils.OBJECT_ID_PROPERTY))
+                .map(ObjectIdUtils::replace)
                 .collect(toList());
 
         // The payload body contains the number of inserted documents.
         // In this case it is always one.
         return MessageBuilder.get(Insert.class)
-                .withJavaObject(ids) // The payload contains the IDs of the inserted documents.
+                .withJavaObject(insertIds) // The payload contains the IDs of the inserted documents.
                 .build();
     }
 
@@ -125,12 +127,12 @@ public class Insert implements ProcessorSync {
         Document documentToInsert = DocumentUtils.from(insertDocument);
         mongoCollection.insertOne(documentToInsert);
 
-        Object insertId = documentToInsert.get(ObjectIdReplacer.OBJECT_ID_PROPERTY);
+        Object insertId = documentToInsert.get(ObjectIdUtils.OBJECT_ID_PROPERTY);
 
         // The payload body contains the number of inserted documents.
         // In this case it is always one.
         return MessageBuilder.get(Insert.class)
-                .withJavaObject(insertId) // The payload contains the id of inserted document.
+                .withJavaObject(ObjectIdUtils.replace(insertId)) // The payload contains the id of inserted document.
                 .build();
     }
 

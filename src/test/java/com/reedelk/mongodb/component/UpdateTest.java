@@ -57,15 +57,14 @@ class UpdateTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
-        String payload = actual.payload();
+        Long modifiedCount = actual.payload();
 
-        // The payload contains the updated document.
-        assertThat(payload).isEqualToIgnoringWhitespace(updatedDocumentAsJson);
+        // The payload contains the modified count.
+        assertThat(modifiedCount).isEqualTo(1);
 
         MessageAttributes attributes = actual.attributes();
 
         assertThat(attributes).containsEntry("matchedCount", 1L);
-        assertThat(attributes).containsEntry("modifiedCount", 1L);
         assertThat(attributes).containsEntry("component", "com.reedelk.mongodb.component.Update");
 
         assertExistDocumentWith("{ name: 'Josh', surname: 'Red', age: 55 }");
@@ -150,15 +149,14 @@ class UpdateTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
-        String payload = actual.payload();
+        Long payload = actual.payload();
 
-        // The payload contains the updated document.
-        assertThat(payload).isEqualToIgnoringWhitespace(updatedDocumentAsJson);
+        // The payload contains the modified count.
+        assertThat(payload).isEqualTo(2L);
 
         MessageAttributes attributes = actual.attributes();
 
         assertThat(attributes).containsEntry("matchedCount", 2L);
-        assertThat(attributes).containsEntry("modifiedCount", 2L);
         assertThat(attributes).containsEntry("component", "com.reedelk.mongodb.component.Update");
 
         assertExistDocumentWith("{ name: 'Olav', surname: 'Zipser', age: 55, olderThan: true }");

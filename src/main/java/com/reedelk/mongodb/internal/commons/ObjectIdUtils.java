@@ -7,9 +7,19 @@ import java.util.Set;
 
 import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 
-public class ObjectIdReplacer {
+public class ObjectIdUtils {
 
     public static final String OBJECT_ID_PROPERTY = "_id";
+
+    // We don't want to return (ObjectId) object.
+    public static Object replace(Object id) {
+        if (id instanceof ObjectId) {
+            ObjectId theId = (ObjectId) id;
+            return theId.toHexString();
+        } else {
+            return id;
+        }
+    }
 
     // Convert Extended Object id into a hex ID.
     // This only if the ID has type Object ID, otherwise it means that

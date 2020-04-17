@@ -6,7 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.mongodb.internal.commons.ObjectIdReplacer;
+import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -136,7 +136,7 @@ public class Find implements ProcessorSync {
             // application/java -> Map or List
             List<Map> output = new ArrayList<>();
             documents.forEach((Consumer<Document>) document -> {
-                ObjectIdReplacer.replace(document);
+                ObjectIdUtils.replace(document);
                 Map<String, Object> wrapped = new HashMap<>(document); // We wrap it so that it uses the to string of java.Map instead of Document.
                 output.add(wrapped);
             });

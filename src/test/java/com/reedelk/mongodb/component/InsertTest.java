@@ -52,9 +52,12 @@ class InsertTest extends AbstractMongoDBTest {
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
-        component.apply(context, input);
+        Message actual = component.apply(context, input);
 
         // Then
+        String insertedId = actual.payload();
+        assertThat(insertedId).isNotNull();
+
         assertExistDocumentWith("{ name: 'John' }");
     }
 
@@ -104,9 +107,12 @@ class InsertTest extends AbstractMongoDBTest {
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
-        component.apply(context, input);
+        Message actual = component.apply(context, input);
 
         // Then
+        List<String> insertedIds = actual.payload();
+        assertThat(insertedIds).hasSize(3);
+
         assertExistDocumentWith("{ name: 'John' }");
         assertExistDocumentWith("{ surname: 'Ellis' }");
         assertExistDocumentWith("{ age: 65 }");
@@ -183,5 +189,59 @@ class InsertTest extends AbstractMongoDBTest {
         assertThat(thrown).hasMessage("The document to insert was null. " +
                 "Null documents cannot be inserted into MongoDB, did you mean to insert an empty document ({}) ? (DynamicValue=[null]).");
         assertDocumentsCount(0);
+    }
+
+    @Test
+    void shouldReturnIdWhenDocumentInsertedWithCustomIntIdValue() {
+        // Given
+        String documentAsJson = "{_id: 3, name: 'John', surname: 'Doe', age: 23 }";
+        component.setDocument(DynamicObject.from(documentAsJson));
+        component.initialize();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        Integer insertedId = actual.payload();
+        assertThat(insertedId).isEqualTo(3);
+
+        assertExistDocumentWith("{ name: 'John' }");
+    }
+
+    @Test
+    void shouldReturnIdWhenDocumentInsertedWithCustomStringIdValue() {
+        // Given
+        String documentAsJson = "{_id: 'aabbcc', name: 'John', surname: 'Doe', age: 23 }";
+        component.setDocument(DynamicObject.from(documentAsJson));
+        component.initialize();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        String insertedId = actual.payload();
+        assertThat(insertedId).isEqualTo("aabbcc");
+
+        assertExistDocumentWith("{ name: 'John' }");
+    }
+
+    @Test
+    void shouldReturnIdWhenDocumentsInsertedWithCustomIntIdValue() {
+        // Given
+        String documentAsJson1 = "{_id: 2, name: 'John', surname: 'Doe', age: 23 }";
+        String documentAsJson2 = "{_id: 33, name: 'John', surname: 'Doe', age: 23 }";
+        String documentAsJson3 = "{_id: 45, name: 'John', surname: 'Doe', age: 23 }";
+        component.setDocument(DynamicObject.from(asList(documentAsJson1, documentAsJson2, documentAsJson3)));
+        component.initialize();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Integer> insertedIds = actual.payload();
+        assertThat(insertedIds).containsExactly(2, 33, 45);
     }
 }

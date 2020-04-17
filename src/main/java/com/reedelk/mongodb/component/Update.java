@@ -13,7 +13,6 @@ import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
-import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
@@ -102,10 +101,12 @@ public class Update implements ProcessorSync {
                 mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
                 mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
 
+        long modifiedCount = updateResult.getModifiedCount();
+
         Map<String, Serializable> componentAttributes = Attributes.from(updateResult);
         return MessageBuilder.get(Update.class)
                 .attributes(componentAttributes)
-                .withJson(json)
+                .withJavaObject(modifiedCount) // Body contains modified count.
                 .build();
     }
 

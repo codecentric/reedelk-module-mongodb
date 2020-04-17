@@ -11,14 +11,12 @@ public class Attributes {
 
     public static Map<String, Serializable> from(UpdateResult updateResult) {
         long matchedCount = updateResult.getMatchedCount();
-        long modifiedCount = updateResult.getModifiedCount();
         String upsertedId = Optional.ofNullable(updateResult.getUpsertedId())
                 .map(Object::toString)
                 .orElse(null);
 
         return ImmutableMap.of(
                 "matchedCount", matchedCount,
-                "modifiedCount", modifiedCount,
                 "upsertedId", upsertedId);
     }
 }
