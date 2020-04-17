@@ -173,7 +173,8 @@ class FindTest extends AbstractMongoDBTest {
                 assertThrows(MongoDBFindException.class, () -> component.apply(context, input));
 
         // Then
-        assertThat(thrown).hasMessage("The Find filter was null. I cannot execute find operation with a null filter (DynamicValue=[#[context.myFilter]]).");
+        assertThat(thrown).hasMessage("The Find query was null. " +
+                "I cannot execute find operation with a null query (DynamicValue=[#[context.myFilter]]).");
     }
 
     @Test

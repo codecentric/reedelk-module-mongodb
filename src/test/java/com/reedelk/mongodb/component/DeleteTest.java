@@ -137,8 +137,8 @@ class DeleteTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The Delete filter was null. " +
-                        "I cannot execute Delete operation with a null filter " +
+                .hasMessage("The Delete query was null. " +
+                        "I cannot execute Delete operation with a null query " +
                         "(DynamicValue=[#[context.myFilter]]).");
     }
 }

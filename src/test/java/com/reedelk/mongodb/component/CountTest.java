@@ -94,8 +94,8 @@ class CountTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The Count filter was null. " +
-                        "I cannot execute Count operation with a null filter " +
+                .hasMessage("The Count query was null. " +
+                        "I cannot execute Count operation with a null query " +
                         "(DynamicValue=[#[context.myFilter]]).");
     }
 }

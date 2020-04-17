@@ -126,8 +126,8 @@ class UpdateTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The Update filter was null. " +
-                        "I cannot execute Update operation with a null filter " +
+                .hasMessage("The Update query was null. " +
+                        "I cannot execute Update operation with a null query " +
                         "(DynamicValue=[#[context.myFilter]]).");
     }
 
