@@ -6,7 +6,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.reedelk.mongodb.component.ConnectionConfiguration;
-import com.reedelk.runtime.api.commons.StringUtils;
 import org.osgi.service.component.annotations.Component;
 
 import java.util.ArrayList;
@@ -16,11 +15,12 @@ import java.util.Map;
 
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNull;
+import static com.reedelk.runtime.api.commons.StringUtils.isNotBlank;
 
 @Component(service = ClientFactory.class)
 public class ClientFactory {
 
-    private final Map<String, ConnectionHolder> configIdClientMap = new HashMap<>();
+    final Map<String, ConnectionHolder> configIdClientMap = new HashMap<>();
 
     public synchronized MongoClient clientByConfig(com.reedelk.runtime.api.component.Component component,
                                                    ConnectionConfiguration connection) {
@@ -35,21 +35,7 @@ public class ClientFactory {
         String connectionId = connection.getId();
 
         if (!configIdClientMap.containsKey(connectionId)) {
-
-            MongoClientSettings.Builder builder = MongoClientSettings.builder();
-
-            String username = connection.getUsername();
-            String password = connection.getPassword();
-            if (StringUtils.isNotBlank(username)) {
-                MongoCredential credential = MongoCredential.createCredential(username, database, password.toCharArray());
-                builder.credential(credential);
-            }
-
-            MongoClientSettings settings = builder
-                    .applyConnectionString(new ConnectionString(connectionURL))
-                    .build();
-
-            MongoClient client = MongoClients.create(settings);
+            MongoClient client = createClient(connection);
             ConnectionHolder connectionHolder = new ConnectionHolder(client);
             configIdClientMap.put(connectionId, connectionHolder);
         }
@@ -78,6 +64,23 @@ public class ClientFactory {
     public synchronized void dispose() {
         configIdClientMap.values()
                 .forEach(connectionHolder -> connectionHolder.client.close());
+        configIdClientMap.clear();
+    }
+
+    MongoClient createClient(ConnectionConfiguration connection) {
+        String username = connection.getUsername();
+        String password = connection.getPassword();
+        String database = connection.getDatabase();
+        String connectionURL = connection.getConnectionURL();
+
+        MongoClientSettings.Builder builder = MongoClientSettings.builder();
+        if (isNotBlank(username)) {
+            MongoCredential credential = MongoCredential.createCredential(username, database, password.toCharArray());
+            builder.credential(credential);
+        }
+
+        builder.applyConnectionString(new ConnectionString(connectionURL));
+        return MongoClients.create(builder.build());
     }
 
     static class ConnectionHolder {
