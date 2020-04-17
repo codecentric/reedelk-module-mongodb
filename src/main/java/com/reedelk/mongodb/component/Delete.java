@@ -29,6 +29,11 @@ import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 
 @ModuleComponent("MongoDB Delete (One/Many)")
 @Component(service = Delete.class, scope = ServiceScope.PROTOTYPE)
+@Description("Deletes one or more documents from a MongoDB database on the specified collection. " +
+        "The MongoDB connection configuration allows to specify host, port, database, username and password to be used for the MongoDB connection. " +
+        "A static or dynamic filter can be applied to the delete operation to match the documents to be deleted." +
+        "The many property allows to delete <b>all</b> the documents matching the filter (Delete Many), " +
+        "otherwise just one document matching the filter will be deleted (Delete One).")
 public class Delete implements ProcessorSync {
 
     @Property("Connection")

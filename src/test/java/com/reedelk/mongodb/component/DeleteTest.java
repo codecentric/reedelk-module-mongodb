@@ -54,8 +54,10 @@ class DeleteTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
+        long deleteCount = actual.payload();
+        assertThat(deleteCount).isEqualTo(1L);
+
         MessageAttributes attributes = actual.attributes();
-        assertThat(attributes).containsEntry("deleteCount", 1L);
         assertThat(attributes).containsEntry("acknowledge", true);
 
         assertExistDocumentWith("{name:'Olav', surname: 'Zipser', age: 55}");
@@ -78,8 +80,10 @@ class DeleteTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
+        long deleteCount = actual.payload();
+        assertThat(deleteCount).isEqualTo(1L);
+
         MessageAttributes attributes = actual.attributes();
-        assertThat(attributes).containsEntry("deleteCount", 1L);
         assertThat(attributes).containsEntry("acknowledge", true);
 
         assertDocumentsCount(1);
@@ -104,8 +108,10 @@ class DeleteTest extends AbstractMongoDBTest {
         Message actual = component.apply(context, input);
 
         // Then
+        long deleteCount = actual.payload();
+        assertThat(deleteCount).isEqualTo(2L);
+
         MessageAttributes attributes = actual.attributes();
-        assertThat(attributes).containsEntry("deleteCount", 2L);
         assertThat(attributes).containsEntry("acknowledge", true);
 
         assertExistDocumentWith("{name:'John', surname: 'Malcom', age: 21}");

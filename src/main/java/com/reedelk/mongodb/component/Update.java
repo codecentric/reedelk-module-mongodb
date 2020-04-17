@@ -31,6 +31,13 @@ import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.require
 
 @ModuleComponent("MongoDB Update (One/Many)")
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)
+@Description("Updates one or more document into a MongoDB database on the specified collection. " +
+        "The MongoDB connection configuration allows to specify host, port, database, username and password to be used for the MongoDB connection. " +
+        "If the filter expression is not empty, the filter will be used to match only the document/s to be updated with the updated document. " +
+        "The updated document can be a static or a dynamic expression. By default the message payload " +
+        "is used as a update document. The update document could be a JSON string, " +
+        "Map, Pair or DataRow (Update One). If the property many is true, <b>all</b> the documents matching the " +
+        "given filter will be updated (Update Many).")
 public class Update implements ProcessorSync {
 
     @Property("Connection")
