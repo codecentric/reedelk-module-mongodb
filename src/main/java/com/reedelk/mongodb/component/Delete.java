@@ -49,7 +49,7 @@ public class Delete implements ProcessorSync {
     private String collection;
 
     @Property("Query Filter")
-    @InitValue("#[message.payload()]")
+    @InitValue("{ _id: 2 }")
     @DefaultValue("#[message.payload()")
     @Description("Sets the query filter to be applied to the delete operation. " +
             "If no query is present the message payload will be used as query filter.")
