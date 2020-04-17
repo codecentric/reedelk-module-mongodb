@@ -7,7 +7,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.reedelk.mongodb.component.ConnectionConfiguration;
 import com.reedelk.runtime.api.commons.StringUtils;
-import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 
 import java.util.ArrayList;
@@ -51,8 +50,6 @@ public class ClientFactory {
                     .build();
 
             MongoClient client = MongoClients.create(settings);
-            testConnection(database, client);
-
             ConnectionHolder connectionHolder = new ConnectionHolder(client);
             configIdClientMap.put(connectionId, connectionHolder);
         }
@@ -81,17 +78,6 @@ public class ClientFactory {
     public synchronized void dispose() {
         configIdClientMap.values()
                 .forEach(connectionHolder -> connectionHolder.client.close());
-    }
-
-    /**
-     * We run a test command to immediately check if the connection is ok. If the username
-     * and password are not correct the connection would fail only when the find/update/delete
-     * operation is triggered.
-     */
-    private void testConnection(String database, MongoClient client) {
-        // TODO: If the connection could not be made, the server was not reachable there is  aproblem with retry.
-        client.getDatabase(database).runCommand(Document.parse("{ connectionStatus: 1, showPrivileges: false }"));
-        // TODO: Log here with connection failed exception.
     }
 
     static class ConnectionHolder {
