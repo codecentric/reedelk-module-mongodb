@@ -2,20 +2,16 @@ package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.exception.MongoDBCountException;
-import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
-import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doAnswer;

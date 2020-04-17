@@ -24,8 +24,8 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
 
 @ModuleComponent("MongoDB Count")
 @Component(service = Count.class, scope = ServiceScope.PROTOTYPE)
-@Description("Counts the documents from the specified MongoDB collection using the configured MongoDB connection. " +
-        "The MongoDB connection configuration allows to specify host, port, database, username and password to be used for the MongoDB connection. " +
+@Description("Counts the documents from the given database collection using the configured connection. " +
+        "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
         "If the filter is not empty, only the documents matching the filter will be taken in consideration by the count.")
 public class Count implements ProcessorSync {
 
@@ -37,7 +37,7 @@ public class Count implements ProcessorSync {
     @Property("Collection")
     @Hint("MyCollection")
     @Example("MyCollection")
-    @Description("Sets the name of the MongoDB collection to be used for the count operation.")
+    @Description("Sets the name of the collection to be used for the count operation.")
     private String collection;
 
     @Property("Filter")

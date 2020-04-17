@@ -8,6 +8,7 @@ import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
+import com.reedelk.runtime.api.commons.DynamicValueUtils;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
@@ -21,7 +22,6 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -29,13 +29,13 @@ import static java.util.stream.Collectors.toList;
 
 @ModuleComponent("MongoDB Insert (One/Many)")
 @Component(service = Insert.class, scope = ServiceScope.PROTOTYPE)
-@Description("Inserts one or more document into a MongoDB database on the specified collection. " +
-        "The MongoDB connection configuration allows to specify host, port, database, username and password to be used for the MongoDB connection. " +
+@Description("Inserts one or more documents into the given database collection. " +
+        "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
         "The input document can be a static or a dynamic expression. By default the message payload " +
         "is used as a document to be inserted. The input document could be a JSON string, " +
-        "Map, Pair or DataRow (Insert One). " +
-        "If the input is a list every item in the list will be considered a document to " +
-        "be inserted and all the documents in the list will be inserted in batch (Insert Many). ")
+        "a Map, a Pair or a DataRow (Insert One). " +
+        "If the input is a list every item in the list will be considered as a separate document " +
+        "and all the documents in the list will be inserted (Insert Many). ")
 public class Insert implements ProcessorSync {
 
     @Property("Connection")
@@ -46,7 +46,7 @@ public class Insert implements ProcessorSync {
     @Property("Collection")
     @Hint("MyCollection")
     @Example("MyCollection")
-    @Description("Sets the name of the MongoDB collection to be used for the insert operation.")
+    @Description("Sets the name of the collection to be used for the insert operation.")
     private String collection;
 
     @Property("Insert Document")
