@@ -6,9 +6,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.ObjectIdReplacer;
 import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
-import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
@@ -17,12 +17,14 @@ import com.reedelk.runtime.api.message.content.MimeType;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Find.FIND_FILTER_NULL;
@@ -117,7 +119,7 @@ public class Find implements ProcessorSync {
             // application/json -> String
             List<String> output = new ArrayList<>();
             documents.forEach((Consumer<Document>) document -> {
-                replaceReadableId(document);
+                ObjectIdReplacer.replace(document);
                 output.add(document.toJson());
             });
             return MessageBuilder.get(Find.class)
@@ -128,7 +130,7 @@ public class Find implements ProcessorSync {
             // application/java -> Map or List
             List<Map> output = new ArrayList<>();
             documents.forEach((Consumer<Document>) document -> {
-                replaceReadableId(document);
+                ObjectIdReplacer.replace(document);
                 Map<String, Object> wrapped = new HashMap<>(document); // We wrap it so that it uses the to string of java.Map instead of Document.
                 output.add(wrapped);
             });
@@ -158,17 +160,5 @@ public class Find implements ProcessorSync {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
-    }
-
-    // Convert Extended Object id into a hex ID. This only if the ID has type Object ID.
-    private void replaceReadableId(Document document) {
-        Set<String> documentKeys = document.keySet();
-        if (documentKeys.contains("_id")) {
-            Object id = document.get("_id");
-            if (id instanceof ObjectId) {
-                ObjectId theId = (ObjectId) id;
-                document.put("_id", ImmutableMap.of("$oid", theId.toHexString()));
-            }
-        }
     }
 }
