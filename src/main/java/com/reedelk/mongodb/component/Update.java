@@ -7,7 +7,6 @@ import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.Attributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
-import com.reedelk.mongodb.internal.commons.Utils;
 import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -26,17 +25,20 @@ import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_FILTER_NULL;
+import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
+import static com.reedelk.mongodb.internal.commons.Utils.isTrue;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNullOrBlank;
 
 @ModuleComponent("MongoDB Update (One/Many)")
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)
 @Description("Updates one or more documents into the given database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "If the filter expression is not empty, the filter will be used to match only the document/s to be updated with the updated document. " +
-        "The updated document can be a static or a dynamic expression. " +
+        "If the filter expression is not empty, the filter will be used to match only the document/s to be updated with the update document. " +
+        "The update document can be a static or a dynamic expression. " +
         "The update document might be a JSON string, a Map, a Pair or a DataRow (Update One)." +
         "If the property many is true, <b>all</b> the documents matching the " +
-        "given filter will be updated (Update Many).")
+        "given filter will be update (Update Many).")
 public class Update implements ProcessorSync {
 
     @Property("Connection")
@@ -50,19 +52,27 @@ public class Update implements ProcessorSync {
     @Description("Sets the name of the collection to be used for the update operation.")
     private String collection;
 
-    @Property("Find Filter")
-    @InitValue("#[message.payload()]")
-    @DefaultValue("#[message.payload()")
-    private DynamicObject filter;
+    @Property("Query Filter")
+    @Hint("{ item: \"BLP921\" }")
+    @InitValue("{ _id: 1 }")
+    @Example("<ul>" +
+            "<li>{ _id: 1 }</li>" +
+            "<li><code>{ _id: message.attributes().id }</code></li>" +
+            "<li>{ name: \"Andy\" }</li>" +
+            "</ul>")
+    @Description("Sets the selection criteria for the update. It could be a static or dynamic value.")
+    private DynamicObject query;
 
-    @Property("Updated Document")
+    @Property("Update Document")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
+    @Description("The update document")
     private DynamicObject document;
 
     @Property("Update Many")
-    @Group("Advanced")
-    @Description("If true updates many documents ")
+    @Example("true")
+    @DefaultValue("false")
+    @Description("If true updates all the documents matching the query filter, otherwise only one will be updated.")
     private Boolean many;
 
     @Reference
@@ -74,7 +84,8 @@ public class Update implements ProcessorSync {
 
     @Override
     public void initialize() {
-        requireNotBlank(Update.class, collection, "MongoDB collection must not be empty");
+        requireNotBlank(Update.class, collection, "Collection must not be empty");
+        requireNotNullOrBlank(Update.class, query, "Filter must not be empty");
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
@@ -84,11 +95,12 @@ public class Update implements ProcessorSync {
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object evaluatedFilter = scriptService.evaluate(filter, flowContext, message)
-                .orElseThrow(() -> new MongoDBUpdateException(UPDATE_FILTER_NULL.format(filter.value())));
+        Object evaluatedFilter = scriptService.evaluate(query, flowContext, message)
+                .orElseThrow(() -> new MongoDBUpdateException(UPDATE_FILTER_NULL.format(query.value())));
 
-        Object toUpdate = scriptService.evaluate(document, flowContext, message)
-                .orElseThrow(() -> new MongoDBUpdateException(UPDATE_DOCUMENT_EMPTY.format(document.value())));
+        Object toUpdate =
+                evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
+                        () -> new MongoDBUpdateException(UPDATE_DOCUMENT_EMPTY.format(document.value())));
 
         UpdateResult updateResult;
 
@@ -96,8 +108,7 @@ public class Update implements ProcessorSync {
         Document toUpdateFilter = DocumentUtils.from(evaluatedFilter);
         Document toUpdateDocument = DocumentUtils.from(toUpdate);
 
-        String json = toUpdateDocument.toJson();
-        updateResult = Utils.isTrue(many) ?
+        updateResult = isTrue(many) ?
                 mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
                 mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
 
@@ -128,8 +139,8 @@ public class Update implements ProcessorSync {
         this.collection = collection;
     }
 
-    public void setFilter(DynamicObject filter) {
-        this.filter = filter;
+    public void setQuery(DynamicObject query) {
+        this.query = query;
     }
 
     public void setMany(Boolean many) {

@@ -26,7 +26,7 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
 @Component(service = Count.class, scope = ServiceScope.PROTOTYPE)
 @Description("Counts the documents from the given database collection using the configured connection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "If the filter is not empty, only the documents matching the filter will be taken in consideration by the count.")
+        "If the query filter is not empty, only the documents matching the filter will be taken in consideration by the count.")
 public class Count implements ProcessorSync {
 
     @Property("Connection")
@@ -40,8 +40,12 @@ public class Count implements ProcessorSync {
     @Description("Sets the name of the collection to be used for the count operation.")
     private String collection;
 
-    @Property("Filter")
-    private DynamicObject filter;
+    @Property("Query Filter")
+    @Hint("{ name: 'John' }")
+    @Example("{ age: 35 } ")
+    @Description("Sets the query filter to be applied to the count operation. " +
+            "If no filter is present all the documents from the given collections will be counted.")
+    private DynamicObject query;
 
     @Reference
     ScriptEngineService scriptService;
@@ -64,12 +68,12 @@ public class Count implements ProcessorSync {
 
         long count;
 
-        if (isNotNullOrBlank(filter)) {
+        if (isNotNullOrBlank(query)) {
 
-            Object evaluatedFilter = scriptService.evaluate(filter, flowContext, message)
-                    .orElseThrow(() -> new MongoDBCountException(COUNT_FILTER_NULL.format(filter.value())));
+            Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
+                    .orElseThrow(() -> new MongoDBCountException(COUNT_FILTER_NULL.format(query.value())));
 
-            Document filterDocument = DocumentUtils.from(evaluatedFilter);
+            Document filterDocument = DocumentUtils.from(evaluatedQuery);
 
             count = mongoCollection.countDocuments(filterDocument);
 
@@ -96,7 +100,7 @@ public class Count implements ProcessorSync {
         this.collection = collection;
     }
 
-    public void setFilter(DynamicObject filter) {
-        this.filter = filter;
+    public void setQuery(DynamicObject query) {
+        this.query = query;
     }
 }

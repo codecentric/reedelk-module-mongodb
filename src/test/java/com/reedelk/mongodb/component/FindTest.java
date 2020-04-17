@@ -78,7 +78,7 @@ class FindTest extends AbstractMongoDBTest {
         String filterAsString = "{ 'name': 'Olav' }";
         DynamicObject filter = DynamicObject.from(filterAsString);
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -100,7 +100,7 @@ class FindTest extends AbstractMongoDBTest {
         Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
         DynamicObject filter = DynamicObject.from(filterAsMap);
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -122,7 +122,7 @@ class FindTest extends AbstractMongoDBTest {
         Pair<String, Integer> filterAsPair = Pair.create("age", 32);
         DynamicObject filter = DynamicObject.from(filterAsPair);
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -142,7 +142,7 @@ class FindTest extends AbstractMongoDBTest {
         // Given
         DynamicObject filter = DynamicObject.from("{ 'name': 'NotExistent' }");
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -159,7 +159,7 @@ class FindTest extends AbstractMongoDBTest {
     void shouldThrowExceptionWhenFindFilterEvaluatesToNull() {
         // Given
         DynamicObject filter = DynamicObject.from("#[context.myFilter]", new ModuleContext(10L));
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -181,7 +181,7 @@ class FindTest extends AbstractMongoDBTest {
         // Given
         Map<String, Object> filterAsMap = ImmutableMap.of("name", "Olav");
         DynamicObject filter = DynamicObject.from(filterAsMap);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -223,7 +223,7 @@ class FindTest extends AbstractMongoDBTest {
     void shouldNotReplaceCustomUserDefinedId() {
         // Given
         insertDocument("{'_id': 21, name:'Jason', surname: 'Red', age: 45}");
-        component.setFilter(DynamicObject.from("{'_id' : 21 }"));
+        component.setQuery(DynamicObject.from("{'_id' : 21 }"));
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.initialize();
 

@@ -1,6 +1,6 @@
 package com.reedelk.mongodb.internal.commons;
 
-import com.reedelk.mongodb.internal.exception.MongoDBFilterException;
+import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import com.reedelk.runtime.api.message.content.DataRow;
 import com.reedelk.runtime.api.message.content.DefaultDataRow;
 import com.reedelk.runtime.api.message.content.Pair;
@@ -80,10 +80,10 @@ class DocumentUtilsTest {
         int wrongTypeFilter = 2;
 
         // When
-        MongoDBFilterException thrown = assertThrows(MongoDBFilterException.class,
+        MongoDBQueryException thrown = assertThrows(MongoDBQueryException.class,
                 () -> DocumentUtils.from(wrongTypeFilter));
 
         // Then
-        assertThat(thrown).hasMessage("Filter with type=[java.lang.Integer] is not a supported.");
+        assertThat(thrown).hasMessage("Query with type=[java.lang.Integer] is not a supported.");
     }
 }

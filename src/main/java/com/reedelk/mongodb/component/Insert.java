@@ -8,7 +8,6 @@ import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
-import com.reedelk.runtime.api.commons.DynamicValueUtils;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
+import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static java.util.stream.Collectors.toList;
 
@@ -80,8 +80,8 @@ public class Insert implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object insertDocument = scriptService.evaluate(document, flowContext, message)
-                .orElseThrow(() -> new MongoDBInsertException(INSERT_DOCUMENT_EMPTY.format(document.value())));
+        Object insertDocument = evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
+                () -> new MongoDBInsertException(INSERT_DOCUMENT_EMPTY.format(document.value())));
 
         if (insertDocument instanceof List) {
             return insertMany(mongoCollection, (List<Object>) insertDocument);

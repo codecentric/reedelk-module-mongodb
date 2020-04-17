@@ -45,7 +45,7 @@ class DeleteTest extends AbstractMongoDBTest {
         insertDocument("{name:'Mark', surname: 'Anton', age: 32}");
 
         String deleteFilter = "{ name: 'Mark' }";
-        component.setFilter(DynamicObject.from(deleteFilter));
+        component.setQuery(DynamicObject.from(deleteFilter));
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -71,7 +71,7 @@ class DeleteTest extends AbstractMongoDBTest {
         insertDocument("{name:'Mark', surname: 'Anton', age: 32}");
 
         String deleteFilter = "{ age: { $gt: 20 } }";
-        component.setFilter(DynamicObject.from(deleteFilter));
+        component.setQuery(DynamicObject.from(deleteFilter));
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -98,7 +98,7 @@ class DeleteTest extends AbstractMongoDBTest {
 
         String deleteFilter = "{ age: { $gt: 25 } }";
 
-        component.setFilter(DynamicObject.from(deleteFilter));
+        component.setQuery(DynamicObject.from(deleteFilter));
         component.setMany(true);
         component.initialize();
 
@@ -122,7 +122,7 @@ class DeleteTest extends AbstractMongoDBTest {
     void shouldThrowExceptionWhenFilterEvaluatesToNull() {
         // Given
         DynamicObject filter = DynamicObject.from("#[context.myFilter]", new ModuleContext(10L));
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();

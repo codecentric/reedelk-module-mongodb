@@ -62,7 +62,7 @@ class CountTest extends AbstractMongoDBTest {
         insertDocument("{name:'Mark', surname: 'Anton', age: 32}");
         insertDocument("{name:'Josh', surname: 'Red', age: 49}");
 
-        component.setFilter(DynamicObject.from("{ name: /.*a.*/ }"));
+        component.setQuery(DynamicObject.from("{ name: /.*a.*/ }"));
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -79,7 +79,7 @@ class CountTest extends AbstractMongoDBTest {
     void shouldThrowExceptionWhenFilterEvaluatesToNull() {
         // Given
         DynamicObject filter = DynamicObject.from("#[context.myFilter]", new ModuleContext(10L));
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();

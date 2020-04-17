@@ -2,9 +2,9 @@ package com.reedelk.mongodb.internal.exception;
 
 import com.reedelk.runtime.api.exception.PlatformException;
 
-public class MongoDBFilterException extends PlatformException {
+public class MongoDBQueryException extends PlatformException {
 
-    public MongoDBFilterException(String message) {
+    public MongoDBQueryException(String message) {
         super(message);
     }
 }

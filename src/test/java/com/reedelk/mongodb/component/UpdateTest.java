@@ -1,6 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
@@ -48,7 +49,7 @@ class UpdateTest extends AbstractMongoDBTest {
         String updatedDocumentAsJson = "{\"$set\": {\"name\": \"Josh\", \"surname\": \"Red\"}}";
 
         component.setDocument(DynamicObject.from(updatedDocumentAsJson));
-        component.setFilter(DynamicObject.from(filterAsJson));
+        component.setQuery(DynamicObject.from(filterAsJson));
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -78,7 +79,7 @@ class UpdateTest extends AbstractMongoDBTest {
         String filterAsJson = "{ name: 'Olav' }";
         DynamicObject document = DynamicObject.from(null);
 
-        component.setFilter(DynamicObject.from(filterAsJson));
+        component.setQuery(DynamicObject.from(filterAsJson));
         component.setDocument(document);
         component.initialize();
 
@@ -89,8 +90,8 @@ class UpdateTest extends AbstractMongoDBTest {
                 .evaluate(document, context, input);
 
         // When
-        MongoDBUpdateException thrown =
-                assertThrows(MongoDBUpdateException.class, () -> component.apply(context, input));
+        MongoDBQueryException thrown =
+                assertThrows(MongoDBQueryException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)
@@ -108,7 +109,7 @@ class UpdateTest extends AbstractMongoDBTest {
         DynamicObject document = DynamicObject.from(updatedDocumentAsJson);
 
         component.setDocument(document);
-        component.setFilter(filter);
+        component.setQuery(filter);
         component.initialize();
 
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
@@ -139,7 +140,7 @@ class UpdateTest extends AbstractMongoDBTest {
         String updatedDocumentAsJson = "{\"$set\": {\"olderThan\": true }}";
 
         component.setDocument(DynamicObject.from(updatedDocumentAsJson));
-        component.setFilter(DynamicObject.from(filterAsJson));
+        component.setQuery(DynamicObject.from(filterAsJson));
         component.setMany(true);
         component.initialize();
 

@@ -31,7 +31,7 @@ import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 @Component(service = Delete.class, scope = ServiceScope.PROTOTYPE)
 @Description("Deletes one or more documents from a database on the specified collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "A static or dynamic filter can be applied to the delete operation to <b>only</b> match the documents to be deleted." +
+        "A static or dynamic query filter can be applied to the delete operation to <b>only</b> match the documents to be deleted." +
         "The many property allows to delete <b>all</b> the documents matching the filter (Delete Many), " +
         "otherwise just one document matching the filter will be deleted (Delete One).")
 public class Delete implements ProcessorSync {
@@ -47,10 +47,12 @@ public class Delete implements ProcessorSync {
     @Description("Sets the name of the collection to be used for the delete operation.")
     private String collection;
 
-    @Property("Delete Filter")
+    @Property("Query Filter")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    private DynamicObject filter;
+    @Description("Sets the query filter to be applied to the delete operation. " +
+            "If no filter is present the message payload will be used as filter.")
+    private DynamicObject query;
 
     @Property("Delete Many")
     private Boolean many;
@@ -74,8 +76,8 @@ public class Delete implements ProcessorSync {
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object evaluatedFilter = scriptService.evaluate(filter, flowContext, message)
-                .orElseThrow(() -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(filter.value())));
+        Object evaluatedFilter = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
+                () -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(query.value())));
 
         Document deleteFilter = DocumentUtils.from(evaluatedFilter);
 
@@ -109,8 +111,8 @@ public class Delete implements ProcessorSync {
         this.collection = collection;
     }
 
-    public void setFilter(DynamicObject filter) {
-        this.filter = filter;
+    public void setQuery(DynamicObject query) {
+        this.query = query;
     }
 
     public void setMany(Boolean many) {

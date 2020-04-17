@@ -35,7 +35,7 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
 @Component(service = Find.class, scope = ServiceScope.PROTOTYPE)
 @Description("Finds one or more documents from the specified database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "A static or dynamic filter can be applied to the find operation to filter the results. " +
+        "A static or dynamic query filter can be applied to the find operation to filter the results. " +
         "This component allows to specify the mime type of the output. " +
         "If you need to further process the result set in a script, it is recommended to output 'application/java' " +
         "in order to avoid further conversion from JSON to Object. If you need the result as is, then keep " +
@@ -53,7 +53,7 @@ public class Find implements ProcessorSync {
     @Description("Sets the name of the collection to be used for the find operation.")
     private String collection;
 
-    @Property("Find Filter")
+    @Property("Query Filter")
     @Hint("{ \"name.last\": \"Hopper\" }")
     @Example("<ul>" +
             "<li>{ _id: 5 }</li>" +
@@ -67,9 +67,9 @@ public class Find implements ProcessorSync {
             "}</li>" +
             "<li><code>context.myFindFilter</code></li>" +
             "</ul>")
-    @Description("Sets the filter to be applied to the find operation. " +
+    @Description("Sets the query filter to be applied to the find operation. " +
             "If no filter is present all the documents from the given collection will be retrieved.")
-    private DynamicObject filter;
+    private DynamicObject query;
 
     @Property("Out mime type")
     @DefaultValue(MimeType.AsString.APPLICATION_JSON)
@@ -105,12 +105,12 @@ public class Find implements ProcessorSync {
 
         FindIterable<Document> documents;
 
-        if (isNotNullOrBlank(filter)) {
+        if (isNotNullOrBlank(query)) {
             // Find documents matching the given filter. The filter could be a JSON
             // string, a Map or a Pair type. If the filter is not one of these objects
             // we throw an exception.
-            Object evaluatedFilter = scriptService.evaluate(this.filter, flowContext, message)
-                    .orElseThrow(() -> new MongoDBFindException(FIND_FILTER_NULL.format(this.filter.value())));
+            Object evaluatedFilter = scriptService.evaluate(query, flowContext, message)
+                    .orElseThrow(() -> new MongoDBFindException(FIND_FILTER_NULL.format(query.value())));
 
             Document documentFilter = DocumentUtils.from(evaluatedFilter);
             documents = mongoDatabaseCollection.find(documentFilter);
@@ -160,8 +160,8 @@ public class Find implements ProcessorSync {
         this.collection = collection;
     }
 
-    public void setFilter(DynamicObject filter) {
-        this.filter = filter;
+    public void setQuery(DynamicObject query) {
+        this.query = query;
     }
 
     public void setMimeType(String mimeType) {
