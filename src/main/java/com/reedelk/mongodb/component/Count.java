@@ -74,7 +74,6 @@ public class Count implements ProcessorSync {
             count = mongoCollection.countDocuments();
         }
 
-        // TODO: Out payload?
         return MessageBuilder.get(Count.class)
                 .withJavaObject(count)
                 .build();

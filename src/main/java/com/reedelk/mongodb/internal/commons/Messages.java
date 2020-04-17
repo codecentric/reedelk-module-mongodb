@@ -96,4 +96,24 @@ public class Messages {
             return message;
         }
     }
+
+    public enum Document implements FormattedMessage {
+
+        MAP_KEYS_NOT_STRING("Could not create document from filter, " +
+                "Map filter must have all keys with string type."),
+        PAIR_LEFT_NOT_STRING("Could not create document from filter with type Pair, " +
+                "the Pair 'left' element must be a string (found=[%s])."),
+        FILTER_NOT_SUPPORTED("Filter with type=[%s] is not a supported.");
+
+        private final String message;
+
+        Document(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String template() {
+            return message;
+        }
+    }
 }

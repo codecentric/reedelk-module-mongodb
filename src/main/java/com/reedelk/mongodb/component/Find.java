@@ -122,6 +122,7 @@ public class Find implements ProcessorSync {
 
         MimeType parsedMimeType = MimeType.parse(this.mimeType, MimeType.APPLICATION_JSON);
 
+        // The output message depends on the wanted mime type.
         if (MimeType.APPLICATION_JSON.equals(parsedMimeType)) {
             // application/json -> String
             List<String> output = new ArrayList<>();
