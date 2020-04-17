@@ -114,32 +114,23 @@ public class Find implements ProcessorSync {
         MimeType parsedMimeType = MimeType.parse(this.mimeType, MimeType.APPLICATION_JSON);
 
         if (MimeType.APPLICATION_JSON.equals(parsedMimeType)) {
-            // Output is JSON
+            // application/json -> String
             List<String> output = new ArrayList<>();
-            documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
+            documents.forEach((Consumer<Document>) document -> {
+                replaceReadableId(document);
+                output.add(document.toJson());
+            });
             return MessageBuilder.get(Find.class)
                     .withJson(output.toString())
                     .build();
 
         } else {
-            // Application java
+            // application/java -> Map or List
             List<Map> output = new ArrayList<>();
-            documents.forEach(new Consumer<Document>() {
-                @Override
-                public void accept(Document document) {
-                    // TODO: What about this ID? // what if it is user defined?
-                    Map<String, Object> wrapped = new HashMap<>();
-                    Set<String> documentKeys = document.keySet();
-                    if (documentKeys.contains("_id")) {
-                        Object id = document.get("_id");
-                        if (id instanceof ObjectId) {
-                            ObjectId theId = (ObjectId) id;
-                            wrapped.put("_id", ImmutableMap.of("$oid", theId.toHexString()));
-                        }
-                    }
-                    wrapped.putAll(document);
-                    output.add(wrapped);
-                }
+            documents.forEach((Consumer<Document>) document -> {
+                replaceReadableId(document);
+                Map<String, Object> wrapped = new HashMap<>(document); // We wrap it so that it uses the to string of java.Map instead of Document.
+                output.add(wrapped);
             });
             return MessageBuilder.get(Find.class)
                     .withList(output, Map.class)
@@ -167,5 +158,17 @@ public class Find implements ProcessorSync {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    // Convert Extended Object id into a hex ID. This only if the ID has type Object ID.
+    private void replaceReadableId(Document document) {
+        Set<String> documentKeys = document.keySet();
+        if (documentKeys.contains("_id")) {
+            Object id = document.get("_id");
+            if (id instanceof ObjectId) {
+                ObjectId theId = (ObjectId) id;
+                document.put("_id", ImmutableMap.of("$oid", theId.toHexString()));
+            }
+        }
     }
 }
