@@ -42,20 +42,6 @@ public class DocumentUtils {
         }
     }
 
-    public static Supplier<MongoDBQueryException> unsupportedQueryType(Object query){
-        return () -> {
-            String error = QUERY_FILTER_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
-            return new MongoDBQueryException(error);
-        };
-    }
-
-    public static Supplier<MongoDBDocumentException> unsupportedDocumentType(Object document){
-        return () -> {
-            String error = DOCUMENT_NOT_SUPPORTED.format(Utils.getClassOrNull(document));
-            return new MongoDBDocumentException(error);
-        };
-    }
-
     private static void checkLeftIsStringTypeOrThrow(Pair<Serializable,Serializable> pair) {
         if (!(pair.left() instanceof String)) {
             String error = PAIR_LEFT_NOT_STRING.format(Utils.getClassOrNull(pair.left()));

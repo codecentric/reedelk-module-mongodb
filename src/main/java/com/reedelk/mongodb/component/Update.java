@@ -7,6 +7,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.Attributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -23,8 +24,6 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
-import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedDocumentType;
-import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_FILTER_NULL;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
@@ -97,7 +96,7 @@ public class Update implements ProcessorSync {
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object evaluatedFilter = scriptService.evaluate(query, flowContext, message)
+        Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                 .orElseThrow(() -> new MongoDBUpdateException(UPDATE_FILTER_NULL.format(query.value())));
 
         Object toUpdate =
@@ -107,8 +106,8 @@ public class Update implements ProcessorSync {
         UpdateResult updateResult;
 
         // Update without pipeline
-        Document toUpdateFilter = DocumentUtils.from(evaluatedFilter, unsupportedQueryType(evaluatedFilter));
-        Document toUpdateDocument = DocumentUtils.from(toUpdate, unsupportedDocumentType(toUpdate));
+        Document toUpdateFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+        Document toUpdateDocument = DocumentUtils.from(toUpdate, Unsupported.documentType(toUpdate));
 
         updateResult = isTrue(many) ?
                 mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :

@@ -24,7 +24,7 @@ class DocumentUtilsTest {
                 new DefaultDataRow(asList("column1", "column2"), asList("One", 2));
 
         // When
-        Document document = DocumentUtils.from(dataRow);
+        Document document = DocumentUtils.from(dataRow, Unsupported.documentType(dataRow));
 
         // Then
         assertThat(document.keySet()).contains("column1", "column2");
@@ -39,7 +39,7 @@ class DocumentUtilsTest {
         String filter = "{'name':'Mark'}";
 
         // When
-        Document document = DocumentUtils.from(filter);
+        Document document = DocumentUtils.from(filter, Unsupported.queryType(filter));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -53,7 +53,7 @@ class DocumentUtilsTest {
                 of("name", "Mark", "age", 43);
 
         // When
-        Document document = DocumentUtils.from(documentMap);
+        Document document = DocumentUtils.from(documentMap, Unsupported.documentType(documentMap));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -67,7 +67,7 @@ class DocumentUtilsTest {
         Pair<String, Serializable> pair = Pair.create("name", "Mark");
 
         // When
-        Document document = DocumentUtils.from(pair);
+        Document document = DocumentUtils.from(pair, Unsupported.documentType(pair));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -81,7 +81,7 @@ class DocumentUtilsTest {
 
         // When
         MongoDBQueryException thrown = assertThrows(MongoDBQueryException.class,
-                () -> DocumentUtils.from(wrongTypeFilter));
+                () -> DocumentUtils.from(wrongTypeFilter, Unsupported.queryType(wrongTypeFilter)));
 
         // Then
         assertThat(thrown).hasMessage("Query with type=[java.lang.Integer] is not a supported.");

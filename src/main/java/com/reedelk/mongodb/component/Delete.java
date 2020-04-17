@@ -6,6 +6,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.commons.Utils;
 import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
 import com.reedelk.runtime.api.annotation.*;
@@ -23,7 +24,6 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
-import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.ImmutableMap.of;
@@ -80,7 +80,7 @@ public class Delete implements ProcessorSync {
         Object evaluatedQuery = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
                 () -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(query.value())));
 
-        Document deleteFilter = DocumentUtils.from(evaluatedQuery, unsupportedQueryType(evaluatedQuery));
+        Document deleteFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 
         DeleteResult deleteResult = Utils.isTrue(many) ?
                 mongoCollection.deleteMany(deleteFilter) :

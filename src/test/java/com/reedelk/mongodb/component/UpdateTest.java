@@ -1,6 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.commons.ModuleContext;
@@ -90,8 +91,8 @@ class UpdateTest extends AbstractMongoDBTest {
                 .evaluate(document, context, input);
 
         // When
-        MongoDBQueryException thrown =
-                assertThrows(MongoDBQueryException.class, () -> component.apply(context, input));
+        MongoDBDocumentException thrown =
+                assertThrows(MongoDBDocumentException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)

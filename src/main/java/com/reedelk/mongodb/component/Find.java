@@ -7,6 +7,7 @@ import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
+import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -27,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Find.FIND_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
@@ -113,7 +113,7 @@ public class Find implements ProcessorSync {
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBFindException(FIND_FILTER_NULL.format(query.value())));
 
-            Document documentFilter = DocumentUtils.from(evaluatedQuery, unsupportedQueryType(evaluatedQuery));
+            Document documentFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
             documents = mongoDatabaseCollection.find(documentFilter);
 
         } else {
