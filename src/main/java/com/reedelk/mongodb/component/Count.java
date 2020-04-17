@@ -27,7 +27,7 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
 @Component(service = Count.class, scope = ServiceScope.PROTOTYPE)
 @Description("Counts the documents from the given database collection using the configured connection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "If the query filter is not empty, only the documents matching the filter will be taken in consideration by the count.")
+        "If the query is not empty, only the documents matching the query filter will be taken in consideration by the count.")
 public class Count implements ProcessorSync {
 
     @Property("Connection")
@@ -45,7 +45,7 @@ public class Count implements ProcessorSync {
     @Hint("{ name: 'John' }")
     @Example("{ age: 35 } ")
     @Description("Sets the query filter to be applied to the count operation. " +
-            "If no filter is present all the documents from the given collections will be counted.")
+            "If no query is present all the documents from the given collections will be counted.")
     private DynamicObject query;
 
     @Reference
@@ -74,9 +74,9 @@ public class Count implements ProcessorSync {
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBCountException(COUNT_QUERY_NULL.format(query.value())));
 
-            Document filterDocument = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+            Document countQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 
-            count = mongoCollection.countDocuments(filterDocument);
+            count = mongoCollection.countDocuments(countQuery);
 
         } else {
             count = mongoCollection.countDocuments();

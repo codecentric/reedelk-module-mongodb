@@ -52,7 +52,7 @@ public class Delete implements ProcessorSync {
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
     @Description("Sets the query filter to be applied to the delete operation. " +
-            "If no query filter is present the message payload will be used as query filter.")
+            "If no query is present the message payload will be used as query filter.")
     private DynamicObject query;
 
     @Property("Delete Many")
