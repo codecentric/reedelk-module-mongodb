@@ -36,11 +36,11 @@ import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.require
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)
 @Description("Updates one or more documents into the given database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
-        "If the filter expression is not empty, the filter will be used to match only the document/s to be updated with the update document. " +
+        "If the query filter expression is not empty, the query will be used to match only the document/s to be updated with the update document. " +
         "The update document can be a static or a dynamic expression. " +
         "The update document might be a JSON string, a Map, a Pair or a DataRow (Update One)." +
         "If the property many is true, <b>all</b> the documents matching the " +
-        "given filter will be update (Update Many).")
+        "given query filter will be updated (Update Many).")
 public class Update implements ProcessorSync {
 
     @Property("Connection")
@@ -87,7 +87,7 @@ public class Update implements ProcessorSync {
     @Override
     public void initialize() {
         requireNotBlank(Update.class, collection, "Collection must not be empty");
-        requireNotNullOrBlank(Update.class, query, "Filter must not be empty");
+        requireNotNullOrBlank(Update.class, query, "Query filter must not be empty");
         this.client = clientFactory.clientByConfig(this, connection);
     }
 
@@ -107,12 +107,12 @@ public class Update implements ProcessorSync {
         UpdateResult updateResult;
 
         // Update without pipeline
-        Document toUpdateFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+        Document toUpdateQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
         Document toUpdateDocument = DocumentUtils.from(toUpdate, Unsupported.documentType(toUpdate));
 
         updateResult = isTrue(many) ?
-                mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
-                mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
+                mongoCollection.updateMany(toUpdateQuery, toUpdateDocument) :
+                mongoCollection.updateOne(toUpdateQuery, toUpdateDocument);
 
         long modifiedCount = updateResult.getModifiedCount();
 

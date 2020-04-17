@@ -113,8 +113,8 @@ public class Find implements ProcessorSync {
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBFindException(FIND_QUERY_NULL.format(query.value())));
 
-            Document documentFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
-            documents = mongoDatabaseCollection.find(documentFilter);
+            Document findQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+            documents = mongoDatabaseCollection.find(findQuery);
 
         } else {
             // Filter was not given, we find all the documents in the collection.
