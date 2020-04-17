@@ -6,13 +6,16 @@ import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import java.util.function.Supplier;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Document.DOCUMENT_NOT_SUPPORTED;
-import static com.reedelk.mongodb.internal.commons.Messages.Document.QUERY_FILTER_NOT_SUPPORTED;
+import static com.reedelk.mongodb.internal.commons.Messages.Document.QUERY_TYPE_NOT_SUPPORTED;
 
 public class Unsupported {
 
+    private Unsupported() {
+    }
+
     public static Supplier<MongoDBQueryException> queryType(Object query){
         return () -> {
-            String error = QUERY_FILTER_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
+            String error = QUERY_TYPE_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
             return new MongoDBQueryException(error);
         };
     }

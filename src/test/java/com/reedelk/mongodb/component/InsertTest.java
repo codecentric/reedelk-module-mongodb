@@ -1,6 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -182,12 +183,11 @@ class InsertTest extends AbstractMongoDBTest {
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
-        MongoDBInsertException thrown = assertThrows(MongoDBInsertException.class,
+        MongoDBDocumentException thrown = assertThrows(MongoDBDocumentException.class,
                 () -> component.apply(context, input));
 
         // Then
-        assertThat(thrown).hasMessage("The document to insert was null. " +
-                "Null documents cannot be inserted into MongoDB, did you mean to insert an empty document ({}) ? (DynamicValue=[null]).");
+        assertThat(thrown).hasMessage("Document with type=[null] is not a supported. Did you mean to update with an empty document ({}) ?");
         assertDocumentsCount(0);
     }
 

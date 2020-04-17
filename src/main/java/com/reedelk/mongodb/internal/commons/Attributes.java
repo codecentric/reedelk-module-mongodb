@@ -9,6 +9,9 @@ import java.util.Optional;
 
 public class Attributes {
 
+    private Attributes() {
+    }
+
     public static Map<String, Serializable> from(UpdateResult updateResult) {
         long matchedCount = updateResult.getMatchedCount();
         String upsertedId = Optional.ofNullable(updateResult.getUpsertedId())

@@ -11,6 +11,9 @@ public class ObjectIdUtils {
 
     public static final String OBJECT_ID_PROPERTY = "_id";
 
+    private ObjectIdUtils() {
+    }
+
     // We don't want to return (ObjectId) object.
     public static Object replace(Object id) {
         if (id instanceof ObjectId) {

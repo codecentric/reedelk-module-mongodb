@@ -78,7 +78,8 @@ class UpdateTest extends AbstractMongoDBTest {
     void shouldThrowExceptionWhenDocumentEvaluatesToNull() {
         // Given
         String filterAsJson = "{ name: 'Olav' }";
-        DynamicObject document = DynamicObject.from(null);
+        DynamicObject document =
+                DynamicObject.from("#[ context.myVarReturningNull ]", new ModuleContext(10L));
 
         component.setQuery(DynamicObject.from(filterAsJson));
         component.setDocument(document);
@@ -96,9 +97,9 @@ class UpdateTest extends AbstractMongoDBTest {
 
         // Then
         assertThat(thrown)
-                .hasMessage("The updated document was null. " +
-                        "Null documents cannot be updated into MongoDB, " +
-                        "did you mean to update with an empty document ({}) ? (DynamicValue=[null]).");
+                .hasMessage("The update document was [null]. Null documents cannot be updated into MongoDB, " +
+                        "did you mean to update with an empty document ({}) ? " +
+                        "(DynamicValue=[#[ context.myVarReturningNull ]]).");
     }
 
     @Test

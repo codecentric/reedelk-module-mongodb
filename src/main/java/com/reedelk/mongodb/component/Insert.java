@@ -7,6 +7,7 @@ import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
+import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -82,7 +83,7 @@ public class Insert implements ProcessorSync {
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
         Object insertDocument = evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
-                () -> new MongoDBInsertException(INSERT_DOCUMENT_EMPTY.format(document.value())));
+                () -> new MongoDBDocumentException(INSERT_DOCUMENT_EMPTY.format(document.value())));
 
         if (insertDocument instanceof List) {
             return insertMany(mongoCollection, (List<Object>) insertDocument);

@@ -24,7 +24,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
-import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_FILTER_NULL;
+import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_QUERY_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 
@@ -33,8 +33,8 @@ import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 @Description("Deletes one or more documents from a database on the specified collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
         "A static or dynamic query filter can be applied to the delete operation to <b>only</b> match the documents to be deleted." +
-        "The many property allows to delete <b>all</b> the documents matching the filter (Delete Many), " +
-        "otherwise just one document matching the filter will be deleted (Delete One).")
+        "The many property allows to delete <b>all</b> the documents matching the query filter (Delete Many), " +
+        "otherwise just one document matching the query filter will be deleted (Delete One).")
 public class Delete implements ProcessorSync {
 
     @Property("Connection")
@@ -52,7 +52,7 @@ public class Delete implements ProcessorSync {
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
     @Description("Sets the query filter to be applied to the delete operation. " +
-            "If no filter is present the message payload will be used as filter.")
+            "If no query filter is present the message payload will be used as query filter.")
     private DynamicObject query;
 
     @Property("Delete Many")
@@ -78,13 +78,13 @@ public class Delete implements ProcessorSync {
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
         Object evaluatedQuery = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
-                () -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(query.value())));
+                () -> new MongoDBDeleteException(DELETE_QUERY_NULL.format(query.value())));
 
-        Document deleteFilter = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+        Document deleteQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 
         DeleteResult deleteResult = Utils.isTrue(many) ?
-                mongoCollection.deleteMany(deleteFilter) :
-                mongoCollection.deleteOne(deleteFilter);
+                mongoCollection.deleteMany(deleteQuery) :
+                mongoCollection.deleteOne(deleteQuery);
 
         long deletedCount = deleteResult.getDeletedCount();
         boolean acknowledged = deleteResult.wasAcknowledged();

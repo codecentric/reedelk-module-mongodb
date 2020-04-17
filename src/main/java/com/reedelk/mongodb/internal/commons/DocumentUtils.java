@@ -1,6 +1,5 @@
 package com.reedelk.mongodb.internal.commons;
 
-import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.message.content.DataRow;
@@ -12,9 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.reedelk.mongodb.internal.commons.Messages.Document.*;
+import static com.reedelk.mongodb.internal.commons.Messages.Document.MAP_KEYS_NOT_STRING;
+import static com.reedelk.mongodb.internal.commons.Messages.Document.PAIR_LEFT_NOT_STRING;
 
 public class DocumentUtils {
+
+    private DocumentUtils() {
+    }
 
     @SuppressWarnings("unchecked")
     public static Document from(Object query, Supplier<? extends PlatformException> exception) {
