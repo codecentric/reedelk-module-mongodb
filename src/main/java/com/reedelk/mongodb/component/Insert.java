@@ -121,6 +121,9 @@ public class Insert implements ProcessorSync {
         // Insert One Document
         Document documentToInsert = DocumentUtils.from(insertDocument);
         mongoCollection.insertOne(documentToInsert);
+        // TODO: Should be this one, the id returned
+        Object id = documentToInsert.get("_id");
+
 
         // The payload body contains the number of inserted documents.
         // In this case it is always one.

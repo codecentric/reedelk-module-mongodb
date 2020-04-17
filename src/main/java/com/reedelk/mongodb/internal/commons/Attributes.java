@@ -2,7 +2,6 @@ package com.reedelk.mongodb.internal.commons;
 
 import com.mongodb.client.result.UpdateResult;
 import com.reedelk.runtime.api.commons.ImmutableMap;
-import com.reedelk.runtime.api.message.MessageAttributes;
 
 import java.io.Serializable;
 import java.util.Map;

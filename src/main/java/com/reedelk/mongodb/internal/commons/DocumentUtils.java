@@ -1,10 +1,12 @@
 package com.reedelk.mongodb.internal.commons;
 
 import com.reedelk.mongodb.internal.exception.MongoDBFilterException;
+import com.reedelk.runtime.api.message.content.DataRow;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Document.*;
@@ -26,6 +28,11 @@ public class DocumentUtils {
             checkLeftIsStringTypeOrThrow(filterPair);
             String key = (String) filterPair.left();
             return new Document(key, filterPair.right());
+
+        } else if (filter instanceof DataRow) {
+            DataRow<Serializable> dataRow = (DataRow<Serializable>) filter;
+            Map<String, Object> dataAsMap = new HashMap<>(dataRow.asMap());
+            return new Document(dataAsMap);
 
         } else {
             String error = FILTER_NOT_SUPPORTED.format(Utils.getClassOrNull(filter));
