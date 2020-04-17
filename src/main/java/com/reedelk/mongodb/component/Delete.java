@@ -12,9 +12,7 @@ import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
-import com.reedelk.runtime.api.message.DefaultMessageAttributes;
 import com.reedelk.runtime.api.message.Message;
-import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
@@ -86,11 +84,10 @@ public class Delete implements ProcessorSync {
         Map<String, Serializable> componentAttributes = ImmutableMap.of(
                 "deleteCount", deletedCount,
                 "acknowledge", acknowledged);
-        MessageAttributes attributes = new DefaultMessageAttributes(Delete.class, componentAttributes);
 
         // TODO: Check return type;
-        return MessageBuilder.get()
-                .attributes(attributes)
+        return MessageBuilder.get(Delete.class)
+                .attributes(componentAttributes)
                 .empty()
                 .build();
     }

@@ -8,6 +8,7 @@ import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
+import com.reedelk.runtime.api.commons.ImmutableMap;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
@@ -16,13 +17,12 @@ import com.reedelk.runtime.api.message.content.MimeType;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Find.FIND_FILTER_NULL;
@@ -117,15 +117,31 @@ public class Find implements ProcessorSync {
             // Output is JSON
             List<String> output = new ArrayList<>();
             documents.forEach((Consumer<Document>) document -> output.add(document.toJson()));
-            return MessageBuilder.get()
+            return MessageBuilder.get(Find.class)
                     .withJson(output.toString())
                     .build();
 
         } else {
             // Application java
             List<Map> output = new ArrayList<>();
-            documents.forEach((Consumer<Document>) output::add);
-            return MessageBuilder.get()
+            documents.forEach(new Consumer<Document>() {
+                @Override
+                public void accept(Document document) {
+                    // TODO: What about this ID? // what if it is user defined?
+                    Map<String, Object> wrapped = new HashMap<>();
+                    Set<String> documentKeys = document.keySet();
+                    if (documentKeys.contains("_id")) {
+                        Object id = document.get("_id");
+                        if (id instanceof ObjectId) {
+                            ObjectId theId = (ObjectId) id;
+                            wrapped.put("_id", ImmutableMap.of("$oid", theId.toHexString()));
+                        }
+                    }
+                    wrapped.putAll(document);
+                    output.add(wrapped);
+                }
+            });
+            return MessageBuilder.get(Find.class)
                     .withList(output, Map.class)
                     .build();
         }

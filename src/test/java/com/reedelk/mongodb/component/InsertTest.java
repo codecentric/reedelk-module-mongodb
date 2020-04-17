@@ -49,7 +49,7 @@ class InsertTest extends AbstractMongoDBTest {
         String documentAsJson = "{name: 'John', surname: 'Doe', age: 23 }";
         component.setDocument(DynamicObject.from(documentAsJson));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -66,7 +66,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.setDocument(DynamicObject.from(documentMap));
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -82,7 +82,7 @@ class InsertTest extends AbstractMongoDBTest {
         component.setDocument(DynamicObject.from(documentPair));
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -101,7 +101,7 @@ class InsertTest extends AbstractMongoDBTest {
 
         component.setDocument(DynamicObject.from(documents));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -122,7 +122,7 @@ class InsertTest extends AbstractMongoDBTest {
 
         component.setDocument(DynamicObject.from(documents));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -142,7 +142,7 @@ class InsertTest extends AbstractMongoDBTest {
 
         component.setDocument(DynamicObject.from(documents));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -159,7 +159,7 @@ class InsertTest extends AbstractMongoDBTest {
 
         component.setDocument(DynamicObject.from(documents));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         component.apply(context, input);
@@ -173,7 +173,7 @@ class InsertTest extends AbstractMongoDBTest {
         // Given
         component.setDocument(DynamicObject.from(null));
         component.initialize();
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         MongoDBInsertException thrown = assertThrows(MongoDBInsertException.class,

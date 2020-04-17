@@ -59,7 +59,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
         component.initialize();
 
-        Message message = MessageBuilder.get().empty().build();
+        Message message = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, message);
@@ -81,7 +81,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -103,7 +103,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -125,7 +125,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -145,7 +145,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -162,7 +162,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         doAnswer(invocation -> Optional.empty())
                 .when(scriptService)
@@ -184,7 +184,7 @@ class FindTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);

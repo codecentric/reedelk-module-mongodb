@@ -51,7 +51,7 @@ class UpdateTest extends AbstractMongoDBTest {
         component.setFilter(DynamicObject.from(filterAsJson));
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -66,7 +66,7 @@ class UpdateTest extends AbstractMongoDBTest {
 
         assertThat(attributes).containsEntry("matchedCount", 1L);
         assertThat(attributes).containsEntry("modifiedCount", 1L);
-        assertThat(attributes).containsEntry("componentName", "Update");
+        assertThat(attributes).containsEntry("component", "com.reedelk.mongodb.component.Update");
 
         assertExistDocumentWith("{ name: 'Josh', surname: 'Red', age: 55 }");
         assertExistDocumentWith("{ name:'Mark', surname: 'Anton', age: 32}");
@@ -83,7 +83,7 @@ class UpdateTest extends AbstractMongoDBTest {
         component.setDocument(document);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         doAnswer(invocation -> Optional.empty())
                 .when(scriptService)
@@ -112,7 +112,7 @@ class UpdateTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         doAnswer(invocation -> Optional.empty())
                 .when(scriptService)
@@ -144,7 +144,7 @@ class UpdateTest extends AbstractMongoDBTest {
         component.setMany(true);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -159,7 +159,7 @@ class UpdateTest extends AbstractMongoDBTest {
 
         assertThat(attributes).containsEntry("matchedCount", 2L);
         assertThat(attributes).containsEntry("modifiedCount", 2L);
-        assertThat(attributes).containsEntry("componentName", "Update");
+        assertThat(attributes).containsEntry("component", "com.reedelk.mongodb.component.Update");
 
         assertExistDocumentWith("{ name: 'Olav', surname: 'Zipser', age: 55, olderThan: true }");
         assertExistDocumentWith("{ name:'John', surname: 'Red', age: 45, olderThan: true }");

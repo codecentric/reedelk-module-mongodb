@@ -6,7 +6,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.reedelk.mongodb.component.ConnectionConfiguration;
-import com.reedelk.mongodb.component.Insert;
 import com.reedelk.runtime.api.commons.StringUtils;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
@@ -27,12 +26,12 @@ public class ClientFactory {
     public synchronized MongoClient clientByConfig(com.reedelk.runtime.api.component.Component component,
                                                    ConnectionConfiguration connection) {
 
-        requireNotNull(Insert.class, connection, "MongoDB connection must not be null");
+        requireNotNull(component.getClass(), connection, "MongoDB connection must not be null");
 
         String database = connection.getDatabase();
         String connectionURL = connection.getConnectionURL();
-        requireNotBlank(Insert.class, database, "MongoDB database must not be null");
-        requireNotBlank(Insert.class, connectionURL, "MongoDB connection url must not be empty");
+        requireNotBlank(component.getClass(), database, "MongoDB database must not be null");
+        requireNotBlank(component.getClass(), connectionURL, "MongoDB connection url must not be empty");
 
         String connectionId = connection.getId();
 
@@ -90,6 +89,7 @@ public class ClientFactory {
      * operation is triggered.
      */
     private void testConnection(String database, MongoClient client) {
+        // TODO: If the connection could not be made, the server was not reachable there is  aproblem with retry.
         client.getDatabase(database).runCommand(Document.parse("{ connectionStatus: 1, showPrivileges: false }"));
         // TODO: Log here with connection failed exception.
     }

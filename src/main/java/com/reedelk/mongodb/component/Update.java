@@ -22,6 +22,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -92,8 +95,8 @@ public class Update implements ProcessorSync {
                 mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :
                 mongoCollection.updateOne(toUpdateFilter, toUpdateDocument);
 
-        MessageAttributes componentAttributes = Attributes.from(updateResult);
-        return MessageBuilder.get()
+        Map<String, Serializable> componentAttributes = Attributes.from(updateResult);
+        return MessageBuilder.get(Update.class)
                 .attributes(componentAttributes)
                 .withJson(json)
                 .build();

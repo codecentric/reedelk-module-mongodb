@@ -49,7 +49,7 @@ class CountTest extends AbstractMongoDBTest {
 
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -69,7 +69,7 @@ class CountTest extends AbstractMongoDBTest {
         component.setFilter(DynamicObject.from("{ name: /.*a.*/ }"));
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
         Message actual = component.apply(context, input);
@@ -86,7 +86,7 @@ class CountTest extends AbstractMongoDBTest {
         component.setFilter(filter);
         component.initialize();
 
-        Message input = MessageBuilder.get().empty().build();
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         doAnswer(invocation -> Optional.empty())
                 .when(scriptService)

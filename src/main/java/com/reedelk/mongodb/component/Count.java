@@ -75,7 +75,7 @@ public class Count implements ProcessorSync {
         }
 
         // TODO: Out payload?
-        return MessageBuilder.get()
+        return MessageBuilder.get(Count.class)
                 .withJavaObject(count)
                 .build();
     }
