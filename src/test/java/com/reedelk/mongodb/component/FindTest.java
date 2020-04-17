@@ -195,4 +195,27 @@ class FindTest extends AbstractMongoDBTest {
         String expectedJson = "[{ \"name\": \"Olav\", \"surname\": \"Zipser\", \"age\": 55}]";
         JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.LENIENT);
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldCorrectlyReplaceObjectIdToHexRepresentation() {
+        // Given
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
+        component.initialize();
+
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String, Object>> payload = actual.payload();
+
+        Map<String, Object> document = payload.get(0);
+        Map<String, Object> id = (Map<String, Object>) document.get("_id");
+        assertThat(id).containsKey("$oid");
+
+        String oidValue = (String) id.get("$oid");
+        assertThat(oidValue).isNotBlank();
+    }
 }

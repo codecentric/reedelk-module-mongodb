@@ -118,10 +118,8 @@ public class Find implements ProcessorSync {
         if (MimeType.APPLICATION_JSON.equals(parsedMimeType)) {
             // application/json -> String
             List<String> output = new ArrayList<>();
-            documents.forEach((Consumer<Document>) document -> {
-                ObjectIdReplacer.replace(document);
-                output.add(document.toJson());
-            });
+            documents.forEach((Consumer<Document>) document ->
+                    output.add(document.toJson()));
             return MessageBuilder.get(Find.class)
                     .withJson(output.toString())
                     .build();
