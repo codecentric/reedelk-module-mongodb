@@ -9,7 +9,7 @@ import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 
 public class ObjectIdReplacer {
 
-    private static final String OBJECT_ID_PROPERTY = "_id";
+    public static final String OBJECT_ID_PROPERTY = "_id";
 
     // Convert Extended Object id into a hex ID.
     // This only if the ID has type Object ID, otherwise it means that

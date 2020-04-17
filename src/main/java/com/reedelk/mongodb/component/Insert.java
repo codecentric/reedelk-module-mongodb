@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
+import com.reedelk.mongodb.internal.commons.ObjectIdReplacer;
 import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
@@ -18,6 +19,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
@@ -34,9 +36,6 @@ import static java.util.stream.Collectors.toList;
         "If the input is a list every item in the list will be considered a document to " +
         "be inserted and all the documents in the list will be inserted in batch (Insert Many). ")
 public class Insert implements ProcessorSync {
-
-    private static final long ONE = 1L;
-    private static final long ZERO = 0L;
 
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this insert operation. " +
@@ -99,7 +98,7 @@ public class Insert implements ProcessorSync {
     private Message insertMany(MongoCollection<Document> mongoCollection, List<Object> toInsertList) {
         if (toInsertList.isEmpty()) {
             return MessageBuilder.get(Insert.class)
-                    .withJavaObject(ZERO) // The payload contains the number of documents inserted.
+                    .withJavaObject(Collections.emptyList())
                     .build();
         }
 
@@ -111,7 +110,7 @@ public class Insert implements ProcessorSync {
         mongoCollection.insertMany(toInsertDocuments);
 
         List<Object> ids = toInsertDocuments.stream()
-                .map(document -> document.get("_id"))
+                .map(document -> document.get(ObjectIdReplacer.OBJECT_ID_PROPERTY))
                 .collect(toList());
 
         // The payload body contains the number of inserted documents.
@@ -126,7 +125,7 @@ public class Insert implements ProcessorSync {
         Document documentToInsert = DocumentUtils.from(insertDocument);
         mongoCollection.insertOne(documentToInsert);
 
-        Object insertId = documentToInsert.get("_id");
+        Object insertId = documentToInsert.get(ObjectIdReplacer.OBJECT_ID_PROPERTY);
 
         // The payload body contains the number of inserted documents.
         // In this case it is always one.
