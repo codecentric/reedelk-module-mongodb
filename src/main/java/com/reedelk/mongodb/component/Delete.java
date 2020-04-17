@@ -56,6 +56,9 @@ public class Delete implements ProcessorSync {
     private DynamicObject query;
 
     @Property("Delete Many")
+    @Example("true")
+    @DefaultValue("false")
+    @Description("If true deletes all the documents matching the query filter, otherwise only one will be delete.")
     private Boolean many;
 
     @Reference
