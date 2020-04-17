@@ -23,6 +23,8 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedDocumentType;
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_FILTER_NULL;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
@@ -105,8 +107,8 @@ public class Update implements ProcessorSync {
         UpdateResult updateResult;
 
         // Update without pipeline
-        Document toUpdateFilter = DocumentUtils.from(evaluatedFilter);
-        Document toUpdateDocument = DocumentUtils.from(toUpdate);
+        Document toUpdateFilter = DocumentUtils.from(evaluatedFilter, unsupportedQueryType(evaluatedFilter));
+        Document toUpdateDocument = DocumentUtils.from(toUpdate, unsupportedDocumentType(toUpdate));
 
         updateResult = isTrue(many) ?
                 mongoCollection.updateMany(toUpdateFilter, toUpdateDocument) :

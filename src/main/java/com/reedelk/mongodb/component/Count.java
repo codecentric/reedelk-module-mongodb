@@ -18,6 +18,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Count.COUNT_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
@@ -73,7 +74,7 @@ public class Count implements ProcessorSync {
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBCountException(COUNT_FILTER_NULL.format(query.value())));
 
-            Document filterDocument = DocumentUtils.from(evaluatedQuery);
+            Document filterDocument = DocumentUtils.from(evaluatedQuery, unsupportedQueryType(evaluatedQuery));
 
             count = mongoCollection.countDocuments(filterDocument);
 

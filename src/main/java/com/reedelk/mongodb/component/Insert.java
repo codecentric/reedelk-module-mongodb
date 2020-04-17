@@ -22,6 +22,8 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.util.Collections;
 import java.util.List;
 
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.from;
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedDocumentType;
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
@@ -105,7 +107,7 @@ public class Insert implements ProcessorSync {
 
         List<Document> toInsertDocuments = toInsertList
                 .stream()
-                .map(DocumentUtils::from)
+                .map(documentAsObject -> DocumentUtils.from(documentAsObject, unsupportedDocumentType(documentAsObject)))
                 .collect(toList());
 
         mongoCollection.insertMany(toInsertDocuments);
@@ -124,7 +126,7 @@ public class Insert implements ProcessorSync {
 
     private Message insertOne(MongoCollection<Document> mongoCollection, Object insertDocument) {
         // Insert One Document
-        Document documentToInsert = DocumentUtils.from(insertDocument);
+        Document documentToInsert = DocumentUtils.from(insertDocument, unsupportedDocumentType(insertDocument));
         mongoCollection.insertOne(documentToInsert);
 
         Object insertId = documentToInsert.get(ObjectIdUtils.OBJECT_ID_PROPERTY);

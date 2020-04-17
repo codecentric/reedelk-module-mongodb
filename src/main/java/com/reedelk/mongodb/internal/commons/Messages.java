@@ -103,6 +103,7 @@ public class Messages {
                 "Map filter must have all keys with string type."),
         PAIR_LEFT_NOT_STRING("Could not create document from filter with type Pair, " +
                 "the Pair 'left' element must be a string (found=[%s])."),
+        DOCUMENT_NOT_SUPPORTED("Document with type=[%s] is not a supported."),
         QUERY_FILTER_NOT_SUPPORTED("Query with type=[%s] is not a supported.");
 
         private final String message;

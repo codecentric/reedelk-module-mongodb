@@ -23,6 +23,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 import java.io.Serializable;
 import java.util.Map;
 
+import static com.reedelk.mongodb.internal.commons.DocumentUtils.unsupportedQueryType;
 import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_FILTER_NULL;
 import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
 import static com.reedelk.runtime.api.commons.ImmutableMap.of;
@@ -76,10 +77,10 @@ public class Delete implements ProcessorSync {
         MongoDatabase mongoDatabase = client.getDatabase(connection.getDatabase());
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        Object evaluatedFilter = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
+        Object evaluatedQuery = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
                 () -> new MongoDBDeleteException(DELETE_FILTER_NULL.format(query.value())));
 
-        Document deleteFilter = DocumentUtils.from(evaluatedFilter);
+        Document deleteFilter = DocumentUtils.from(evaluatedQuery, unsupportedQueryType(evaluatedQuery));
 
         DeleteResult deleteResult = Utils.isTrue(many) ?
                 mongoCollection.deleteMany(deleteFilter) :

@@ -1,6 +1,8 @@
 package com.reedelk.mongodb.internal.commons;
 
+import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.message.content.DataRow;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
@@ -8,13 +10,14 @@ import org.bson.Document;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Document.*;
 
 public class DocumentUtils {
 
     @SuppressWarnings("unchecked")
-    public static Document from(Object query) {
+    public static Document from(Object query, Supplier<? extends PlatformException> exception) {
 
         if (query instanceof String) {
             return Document.parse((String) query);
@@ -35,9 +38,22 @@ public class DocumentUtils {
             return new Document(dataAsMap);
 
         } else {
-            String error = QUERY_FILTER_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
-            throw new MongoDBQueryException(error);
+            throw exception.get();
         }
+    }
+
+    public static Supplier<MongoDBQueryException> unsupportedQueryType(Object query){
+        return () -> {
+            String error = QUERY_FILTER_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
+            return new MongoDBQueryException(error);
+        };
+    }
+
+    public static Supplier<MongoDBDocumentException> unsupportedDocumentType(Object document){
+        return () -> {
+            String error = DOCUMENT_NOT_SUPPORTED.format(Utils.getClassOrNull(document));
+            return new MongoDBDocumentException(error);
+        };
     }
 
     private static void checkLeftIsStringTypeOrThrow(Pair<Serializable,Serializable> pair) {
