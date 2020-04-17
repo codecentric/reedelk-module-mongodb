@@ -218,4 +218,25 @@ class FindTest extends AbstractMongoDBTest {
         String oidValue = (String) id.get("$oid");
         assertThat(oidValue).isNotBlank();
     }
+
+    @Test
+    void shouldNotReplaceCustomUserDefinedId() {
+        // Given
+        insertDocument("{'_id': 21, name:'Jason', surname: 'Red', age: 45}");
+        component.setFilter(DynamicObject.from("{'_id' : 21 }"));
+        component.setMimeType(MimeType.AsString.APPLICATION_JAVA);
+        component.initialize();
+
+        Message input = MessageBuilder.get(TestComponent.class).empty().build();
+
+        // When
+        Message actual = component.apply(context, input);
+
+        // Then
+        List<Map<String, Object>> payload = actual.payload();
+
+        Map<String, Object> document = payload.get(0);
+        Integer id = (Integer) document.get("_id");
+        assertThat(id).isEqualTo(21);
+    }
 }

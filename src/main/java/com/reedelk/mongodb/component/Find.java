@@ -33,6 +33,13 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
 
 @ModuleComponent("MongoDB Find")
 @Component(service = Find.class, scope = ServiceScope.PROTOTYPE)
+@Description("Finds one or more document from a MongoDB database on the specified collection. " +
+        "The MongoDB connection configuration allows to specify host, port, database, username and password to be used for the MongoDB connection. " +
+        "A static or dynamic filter can be applied to the find operation to filter the results. " +
+        "This component allows to specify the mime type of the output. " +
+        "If you need to further process the result set in a script, it is recommended to output 'application/java' " +
+        "in order to avoid further conversion from JSON to Object. If you need the result as is, then keep " +
+        "'application/json' as output mime type.")
 public class Find implements ProcessorSync {
 
     @Property("Connection")
