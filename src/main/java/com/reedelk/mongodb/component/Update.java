@@ -68,7 +68,7 @@ public class Update implements ProcessorSync {
     @Property("Update Document")
     @InitValue("#[message.payload()]")
     @DefaultValue("#[message.payload()")
-    @Description("The update document")
+    @Description("The update document to be used to update one or all the documents matching the query filter.")
     private DynamicObject document;
 
     @Property("Update Many")
