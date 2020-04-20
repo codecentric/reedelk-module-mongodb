@@ -15,14 +15,14 @@ public class Unsupported {
 
     public static Supplier<MongoDBQueryException> queryType(Object query){
         return () -> {
-            String error = QUERY_TYPE_NOT_SUPPORTED.format(Utils.getClassOrNull(query));
+            String error = QUERY_TYPE_NOT_SUPPORTED.format(Utils.classNameOrNull(query));
             return new MongoDBQueryException(error);
         };
     }
 
     public static Supplier<MongoDBDocumentException> documentType(Object document){
         return () -> {
-            String error = DOCUMENT_NOT_SUPPORTED.format(Utils.getClassOrNull(document));
+            String error = DOCUMENT_NOT_SUPPORTED.format(Utils.classNameOrNull(document));
             return new MongoDBDocumentException(error);
         };
     }

@@ -47,7 +47,7 @@ public class DocumentUtils {
 
     private static void checkLeftIsStringTypeOrThrow(Pair<Serializable,Serializable> pair) {
         if (!(pair.left() instanceof String)) {
-            String error = PAIR_LEFT_NOT_STRING.format(Utils.getClassOrNull(pair.left()));
+            String error = PAIR_LEFT_NOT_STRING.format(Utils.classNameOrNull(pair.left()));
             throw new MongoDBQueryException(error);
         }
     }
