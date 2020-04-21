@@ -82,6 +82,8 @@ public class Insert implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
+        // TODO: One component must only have one Input type. Here you might have list and not list
+        //  therefore there should be InsertOne and InsertMany.
         Object insertDocument = evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
                 () -> new MongoDBDocumentException(INSERT_DOCUMENT_EMPTY.format(document.value())));
 
