@@ -20,23 +20,27 @@ public class DocumentUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Document from(Object query, Supplier<? extends PlatformException> exception) {
+    public static Document from(Object documentObject, Supplier<? extends PlatformException> exception) {
+        // TODO: In to update the document what if it is a byte array?
+        //  it might come from the REST Listener post payload....in that case
+        //  we should convert it to a string?
+        // Should be:
+        // If documentObject instanceof byte[] -> converter.convert(to string)?
+        if (documentObject instanceof String) {
+            return Document.parse((String) documentObject);
 
-        if (query instanceof String) {
-            return Document.parse((String) query);
+        } else if (documentObject instanceof Map) {
+            checkKeysAreStringTypeOrThrow((Map<Object, Object>) documentObject);
+            return new Document((Map<String, Object>) documentObject);
 
-        } else if (query instanceof Map) {
-            checkKeysAreStringTypeOrThrow((Map<Object, Object>) query);
-            return new Document((Map<String, Object>) query);
-
-        } else if (query instanceof Pair) {
-            Pair<Serializable, Serializable> queryPair = (Pair<Serializable, Serializable>) query;
+        } else if (documentObject instanceof Pair) {
+            Pair<Serializable, Serializable> queryPair = (Pair<Serializable, Serializable>) documentObject;
             checkLeftIsStringTypeOrThrow(queryPair);
             String key = (String) queryPair.left();
             return new Document(key, queryPair.right());
 
-        } else if (query instanceof DataRow) {
-            DataRow<Serializable> dataRow = (DataRow<Serializable>) query;
+        } else if (documentObject instanceof DataRow) {
+            DataRow<Serializable> dataRow = (DataRow<Serializable>) documentObject;
             Map<String, Object> dataAsMap = new HashMap<>(dataRow.asMap());
             return new Document(dataAsMap);
 
