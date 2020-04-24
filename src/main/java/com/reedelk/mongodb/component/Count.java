@@ -20,7 +20,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Count.COUNT_QUERY_NULL;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
 @ModuleComponent("MongoDB Count")

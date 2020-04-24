@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Find.FIND_QUERY_NULL;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
 @ModuleComponent("MongoDB Find")

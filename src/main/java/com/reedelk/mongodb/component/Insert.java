@@ -8,7 +8,6 @@ import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
-import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
@@ -26,7 +25,7 @@ import java.util.List;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 import static java.util.stream.Collectors.toList;
 
 @ModuleComponent("MongoDB Insert (One/Many)")

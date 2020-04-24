@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNull;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotNull;
 import static com.reedelk.runtime.api.commons.StringUtils.isNotBlank;
 
 @Component(service = ClientFactory.class)

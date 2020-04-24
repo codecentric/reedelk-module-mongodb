@@ -29,8 +29,8 @@ import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUME
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_QUERY_NULL;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
 import static com.reedelk.mongodb.internal.commons.Utils.isTrue;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotNullOrBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotNullOrBlank;
 
 @ModuleComponent("MongoDB Update (One/Many)")
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)

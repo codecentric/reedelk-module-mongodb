@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_QUERY_NULL;
-import static com.reedelk.runtime.api.commons.ConfigurationPreconditions.requireNotBlank;
+import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 import static com.reedelk.runtime.api.commons.ImmutableMap.of;
 
 @ModuleComponent("MongoDB Delete (One/Many)")
