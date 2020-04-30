@@ -5,7 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.UpdateResult;
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.commons.Attributes;
+import com.reedelk.mongodb.internal.attribute.UpdateAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
@@ -14,6 +14,7 @@ import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
+import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
@@ -21,9 +22,6 @@ import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
-
-import java.io.Serializable;
-import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_QUERY_NULL;
@@ -116,9 +114,10 @@ public class Update implements ProcessorSync {
 
         long modifiedCount = updateResult.getModifiedCount();
 
-        Map<String, Serializable> componentAttributes = Attributes.from(updateResult);
+        MessageAttributes attributes = new UpdateAttributes(updateResult);
+
         return MessageBuilder.get(Update.class)
-                .attributes(componentAttributes)
+                .attributes(attributes)
                 .withJavaObject(modifiedCount) // Body contains modified count.
                 .build();
     }
