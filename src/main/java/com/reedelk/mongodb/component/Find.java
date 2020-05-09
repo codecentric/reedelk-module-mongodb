@@ -43,6 +43,7 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
         "'application/json' as output mime type.")
 public class Find implements ProcessorSync {
 
+    @DialogTitle("MongoDB Connection")
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this find operation. " +
             "Shared configurations use the same MongoDB client.")

@@ -30,6 +30,7 @@ import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank
         "If the query is not empty, only the documents matching the query filter will be taken in consideration by the count.")
 public class Count implements ProcessorSync {
 
+    @DialogTitle("MongoDB Connection")
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this count operation. " +
             "Shared configurations use the same MongoDB client.")

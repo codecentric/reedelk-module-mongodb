@@ -41,6 +41,7 @@ import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuratio
         "given query filter will be updated (Update Many).")
 public class Update implements ProcessorSync {
 
+    @DialogTitle("MongoDB Connection")
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this update operation. " +
             "Shared configurations use the same MongoDB client.")

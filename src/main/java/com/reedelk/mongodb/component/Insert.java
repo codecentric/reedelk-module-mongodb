@@ -39,6 +39,7 @@ import static java.util.stream.Collectors.toList;
         "and all the documents in the list will be inserted (Insert Many). ")
 public class Insert implements ProcessorSync {
 
+    @DialogTitle("MongoDB Connection")
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this insert operation. " +
             "Shared configurations use the same MongoDB client.")

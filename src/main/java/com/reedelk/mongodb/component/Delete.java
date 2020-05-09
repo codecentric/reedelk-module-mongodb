@@ -34,6 +34,7 @@ import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuratio
         "otherwise just one document matching the query filter will be deleted (Delete One).")
 public class Delete implements ProcessorSync {
 
+    @DialogTitle("MongoDB Connection")
     @Property("Connection")
     @Description("MongoDB connection configuration to be used by this delete operation. " +
             "Shared configurations use the same MongoDB client.")
