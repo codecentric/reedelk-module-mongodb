@@ -14,7 +14,6 @@ import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
-import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
@@ -90,7 +89,7 @@ public class Delete implements ProcessorSync {
         long deletedCount = deleteResult.getDeletedCount();
         boolean acknowledged = deleteResult.wasAcknowledged();
 
-        MessageAttributes attributes = new DeleteAttributes(deletedCount, acknowledged);
+        DeleteAttributes attributes = new DeleteAttributes(deletedCount, acknowledged);
 
         return MessageBuilder.get(Delete.class)
                 .attributes(attributes)
