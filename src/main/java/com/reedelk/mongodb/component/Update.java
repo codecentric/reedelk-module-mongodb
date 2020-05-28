@@ -12,16 +12,21 @@ import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
+import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Messages.Update.UPDATE_QUERY_NULL;
@@ -32,6 +37,13 @@ import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuratio
 
 @ModuleComponent("MongoDB Update (One/Many)")
 @Component(service = Update.class, scope = ServiceScope.PROTOTYPE)
+@ComponentOutput(
+        attributes = UpdateAttributes.class,
+        payload = long.class,
+        description = "The number of updated documents.")
+@ComponentInput(
+        payload = { List.class, String.class, Map.class, Pair.class, byte[].class },
+        description = "The updated data of the document to be updated in MongoDB.")
 @Description("Updates one or more documents into the given database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
         "If the query filter expression is not empty, the query will be used to match only the document/s to be updated with the update document. " +
@@ -77,6 +89,8 @@ public class Update implements ProcessorSync {
     private Boolean many;
 
     @Reference
+    ConverterService converterService;
+    @Reference
     ScriptEngineService scriptService;
     @Reference
     ClientFactory clientFactory;
@@ -106,8 +120,8 @@ public class Update implements ProcessorSync {
         UpdateResult updateResult;
 
         // Update without pipeline
-        Document toUpdateQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
-        Document toUpdateDocument = DocumentUtils.from(toUpdate, Unsupported.documentType(toUpdate));
+        Document toUpdateQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+        Document toUpdateDocument = DocumentUtils.from(converterService, toUpdate, Unsupported.documentType(toUpdate));
 
         updateResult = isTrue(many) ?
                 mongoCollection.updateMany(toUpdateQuery, toUpdateDocument) :
@@ -118,8 +132,8 @@ public class Update implements ProcessorSync {
         MessageAttributes attributes = new UpdateAttributes(updateResult);
 
         return MessageBuilder.get(Update.class)
-                .attributes(attributes)
                 .withJavaObject(modifiedCount) // Body contains modified count.
+                .attributes(attributes)
                 .build();
     }
 

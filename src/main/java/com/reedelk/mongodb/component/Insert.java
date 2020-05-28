@@ -10,9 +10,12 @@ import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
+import com.reedelk.runtime.api.message.MessageAttributes;
 import com.reedelk.runtime.api.message.MessageBuilder;
+import com.reedelk.runtime.api.message.content.Pair;
 import com.reedelk.runtime.api.script.ScriptEngineService;
 import com.reedelk.runtime.api.script.dynamicvalue.DynamicObject;
 import org.bson.Document;
@@ -22,13 +25,22 @@ import org.osgi.service.component.annotations.ServiceScope;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.reedelk.mongodb.internal.commons.Messages.Insert.INSERT_DOCUMENT_EMPTY;
 import static com.reedelk.mongodb.internal.commons.Utils.evaluateOrUsePayloadWhenEmpty;
 import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 import static java.util.stream.Collectors.toList;
 
+
 @ModuleComponent("MongoDB Insert (One/Many)")
+@ComponentOutput(
+        attributes = MessageAttributes.class,
+        payload = { Object.class, List.class },
+        description = "A list of inserted IDs.")
+@ComponentInput(
+        payload = { List.class, String.class, Map.class, Pair.class, byte[].class },
+        description = "The data to be inserted into the MongoDB. If the input is a list, many documents will be inserted together.")
 @Component(service = Insert.class, scope = ServiceScope.PROTOTYPE)
 @Description("Inserts one or more documents into the given database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
@@ -62,6 +74,8 @@ public class Insert implements ProcessorSync {
     private DynamicObject document;
 
     @Reference
+    ConverterService converterService;
+    @Reference
     ScriptEngineService scriptService;
     @Reference
     ClientFactory clientFactory;
@@ -82,8 +96,6 @@ public class Insert implements ProcessorSync {
 
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
-        // TODO: One component must only have one Input type. Here you might have list and not list
-        //  therefore there should be InsertOne and InsertMany.
         Object insertDocument = evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
                 () -> new MongoDBDocumentException(INSERT_DOCUMENT_EMPTY.format(document.value())));
 
@@ -109,7 +121,8 @@ public class Insert implements ProcessorSync {
 
         List<Document> toInsertDocuments = toInsertList
                 .stream()
-                .map(documentAsObject -> DocumentUtils.from(documentAsObject, Unsupported.documentType(documentAsObject)))
+                .map(documentAsObject ->
+                        DocumentUtils.from(converterService, documentAsObject, Unsupported.documentType(documentAsObject)))
                 .collect(toList());
 
         mongoCollection.insertMany(toInsertDocuments);
@@ -128,7 +141,8 @@ public class Insert implements ProcessorSync {
 
     private Message insertOne(MongoCollection<Document> mongoCollection, Object insertDocument) {
         // Insert One Document
-        Document documentToInsert = DocumentUtils.from(insertDocument, Unsupported.documentType(insertDocument));
+        Document documentToInsert =
+                DocumentUtils.from(converterService, insertDocument, Unsupported.documentType(insertDocument));
         mongoCollection.insertOne(documentToInsert);
 
         Object insertId = documentToInsert.get(ObjectIdUtils.OBJECT_ID_PROPERTY);

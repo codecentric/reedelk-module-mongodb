@@ -4,11 +4,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.attribute.CountAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBCountException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -24,6 +26,13 @@ import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuratio
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
 @ModuleComponent("MongoDB Count")
+@ComponentOutput(
+        attributes = CountAttributes.class,
+        payload = long.class,
+        description = "The number of documents matching the query filter.")
+@ComponentInput(
+        payload = Object.class,
+        description = "The input payload is used to evaluate the query filter expression.")
 @Component(service = Count.class, scope = ServiceScope.PROTOTYPE)
 @Description("Counts the documents from the given database collection using the configured connection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
@@ -50,6 +59,8 @@ public class Count implements ProcessorSync {
     private DynamicObject query;
 
     @Reference
+    ConverterService converterService;
+    @Reference
     ScriptEngineService scriptService;
     @Reference
     ClientFactory clientFactory;
@@ -70,20 +81,27 @@ public class Count implements ProcessorSync {
 
         long count;
 
+
+        CountAttributes attributes;
         if (isNotNullOrBlank(query)) {
 
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBCountException(COUNT_QUERY_NULL.format(query.value())));
 
-            Document countQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+            Document countQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 
             count = mongoCollection.countDocuments(countQuery);
 
+            attributes = new CountAttributes(collection, evaluatedQuery);
+
         } else {
             count = mongoCollection.countDocuments();
+
+            attributes = new CountAttributes(collection, null);
         }
 
         return MessageBuilder.get(Count.class)
+                .attributes(attributes)
                 .withJavaObject(count)
                 .build();
     }

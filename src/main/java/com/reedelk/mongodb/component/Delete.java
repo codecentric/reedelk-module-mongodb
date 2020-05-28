@@ -12,6 +12,7 @@ import com.reedelk.mongodb.internal.commons.Utils;
 import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -26,6 +27,13 @@ import static com.reedelk.mongodb.internal.commons.Messages.Delete.DELETE_QUERY_
 import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuration.requireNotBlank;
 
 @ModuleComponent("MongoDB Delete (One/Many)")
+@ComponentOutput(
+        attributes = DeleteAttributes.class,
+        payload = long.class,
+        description = "The number of deleted documents.")
+@ComponentInput(
+        payload = Object.class,
+        description = "The input payload is used to evaluate the query filter expression.")
 @Component(service = Delete.class, scope = ServiceScope.PROTOTYPE)
 @Description("Deletes one or more documents from a database on the specified collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
@@ -60,6 +68,8 @@ public class Delete implements ProcessorSync {
     private Boolean many;
 
     @Reference
+    ConverterService converterService;
+    @Reference
     ScriptEngineService scriptService;
     @Reference
     ClientFactory clientFactory;
@@ -81,7 +91,7 @@ public class Delete implements ProcessorSync {
         Object evaluatedQuery = Utils.evaluateOrUsePayloadWhenEmpty(query, scriptService, flowContext, message,
                 () -> new MongoDBDeleteException(DELETE_QUERY_NULL.format(query.value())));
 
-        Document deleteQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+        Document deleteQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 
         DeleteResult deleteResult = Utils.isTrue(many) ?
                 mongoCollection.deleteMany(deleteQuery) :
@@ -90,11 +100,11 @@ public class Delete implements ProcessorSync {
         long deletedCount = deleteResult.getDeletedCount();
         boolean acknowledged = deleteResult.wasAcknowledged();
 
-        DeleteAttributes attributes = new DeleteAttributes(deletedCount, acknowledged);
+        DeleteAttributes attributes = new DeleteAttributes(deletedCount, acknowledged, evaluatedQuery);
 
         return MessageBuilder.get(Delete.class)
-                .attributes(attributes)
                 .withJavaObject(deletedCount)
+                .attributes(attributes)
                 .build();
     }
 

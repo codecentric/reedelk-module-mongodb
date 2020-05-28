@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.reedelk.mongodb.internal.ClientFactory;
+import com.reedelk.mongodb.internal.attribute.FindAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
@@ -33,6 +34,13 @@ import static com.reedelk.runtime.api.commons.ComponentPrecondition.Configuratio
 import static com.reedelk.runtime.api.commons.DynamicValueUtils.isNotNullOrBlank;
 
 @ModuleComponent("MongoDB Find")
+@ComponentOutput(
+        attributes = FindAttributes.class,
+        payload = { List.class, String.class },
+        description = "A list of Objects representing the documents found or a JSON string with the documents found if the output mime type was application/json.")
+@ComponentInput(
+        payload = Object.class,
+        description = "The input payload is used to evaluate the query filter expression.")
 @Component(service = Find.class, scope = ServiceScope.PROTOTYPE)
 @Description("Finds one or more documents from the specified database collection. " +
         "The connection configuration allows to specify host, port, database name, username and password to be used for authentication against the database. " +
@@ -107,6 +115,8 @@ public class Find implements ProcessorSync {
 
         FindIterable<Document> documents;
 
+        FindAttributes attributes;
+
         if (isNotNullOrBlank(query)) {
             // Find documents matching the given filter. The filter could be a JSON
             // string, a Map or a Pair type. If the filter is not one of these objects
@@ -117,9 +127,13 @@ public class Find implements ProcessorSync {
             Document findQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
             documents = mongoDatabaseCollection.find(findQuery);
 
+            attributes = new FindAttributes(collection, evaluatedQuery);
+
         } else {
             // Filter was not given, we find all the documents in the collection.
             documents = mongoDatabaseCollection.find();
+
+            attributes = new FindAttributes(collection, null);
         }
 
         MimeType parsedMimeType = MimeType.parse(this.mimeType, MimeType.APPLICATION_JSON);
@@ -132,6 +146,7 @@ public class Find implements ProcessorSync {
                     output.add(document.toJson()));
             return MessageBuilder.get(Find.class)
                     .withJson(output.toString())
+                    .attributes(attributes)
                     .build();
 
         } else {
@@ -144,6 +159,7 @@ public class Find implements ProcessorSync {
             });
             return MessageBuilder.get(Find.class)
                     .withList(output, Map.class)
+                    .attributes(attributes)
                     .build();
         }
     }

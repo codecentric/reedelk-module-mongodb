@@ -1,6 +1,7 @@
 package com.reedelk.mongodb.internal.commons;
 
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
@@ -18,11 +19,13 @@ public class DocumentUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Document from(Object documentObject, Supplier<? extends PlatformException> exception) {
-        // TODO: In to update the document what if it is a byte array?
-        //  it might come from the REST Listener post payload....in that case
-        //  we should convert it to a string?
-        // Should be:
+    public static Document from(ConverterService converterService, Object documentObject, Supplier<? extends PlatformException> exception) {
+
+        // Could be a byte array containing the JSON sent with a post to a REST Listener.
+        if (documentObject instanceof byte[] || documentObject instanceof Byte[]) {
+            String converted = converterService.convert(documentObject, String.class);
+            return Document.parse(converted);
+        }
         // If documentObject instanceof byte[] -> converter.convert(to string)?
         if (documentObject instanceof String) {
             return Document.parse((String) documentObject);
