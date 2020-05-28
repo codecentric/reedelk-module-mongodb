@@ -1,9 +1,13 @@
 package com.reedelk.mongodb.internal.commons;
 
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -12,7 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
+@ExtendWith(MockitoExtension.class)
 class DocumentUtilsTest {
+
+    @Mock
+    private ConverterService converterService;
 
     @Test
     void shouldCreateDocumentFromString() {
@@ -20,7 +28,7 @@ class DocumentUtilsTest {
         String filter = "{'name':'Mark'}";
 
         // When
-        Document document = DocumentUtils.from(filter, Unsupported.queryType(filter));
+        Document document = DocumentUtils.from(converterService, filter, Unsupported.queryType(filter));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -34,7 +42,7 @@ class DocumentUtilsTest {
                 of("name", "Mark", "age", 43);
 
         // When
-        Document document = DocumentUtils.from(documentMap, Unsupported.documentType(documentMap));
+        Document document = DocumentUtils.from(converterService, documentMap, Unsupported.documentType(documentMap));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -48,7 +56,7 @@ class DocumentUtilsTest {
         Pair<String, Serializable> pair = Pair.create("name", "Mark");
 
         // When
-        Document document = DocumentUtils.from(pair, Unsupported.documentType(pair));
+        Document document = DocumentUtils.from(converterService, pair, Unsupported.documentType(pair));
 
         // Then
         assertThat(document.get("name")).isEqualTo("Mark");
@@ -62,7 +70,7 @@ class DocumentUtilsTest {
 
         // When
         MongoDBQueryException thrown = assertThrows(MongoDBQueryException.class,
-                () -> DocumentUtils.from(wrongTypeFilter, Unsupported.queryType(wrongTypeFilter)));
+                () -> DocumentUtils.from(converterService, wrongTypeFilter, Unsupported.queryType(wrongTypeFilter)));
 
         // Then
         assertThat(thrown).hasMessage("Query with type=[java.lang.Integer] is not a supported.");

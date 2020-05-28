@@ -12,6 +12,7 @@ import com.reedelk.mongodb.internal.commons.Unsupported;
 import com.reedelk.mongodb.internal.exception.MongoDBFindException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
+import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.flow.FlowContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -94,6 +95,8 @@ public class Find implements ProcessorSync {
     private String mimeType;
 
     @Reference
+    ConverterService converterService;
+    @Reference
     ScriptEngineService scriptService;
     @Reference
     ClientFactory clientFactory;
@@ -124,7 +127,7 @@ public class Find implements ProcessorSync {
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
                     .orElseThrow(() -> new MongoDBFindException(FIND_QUERY_NULL.format(query.value())));
 
-            Document findQuery = DocumentUtils.from(evaluatedQuery, Unsupported.queryType(evaluatedQuery));
+            Document findQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
             documents = mongoDatabaseCollection.find(findQuery);
 
             attributes = new FindAttributes(collection, evaluatedQuery);
