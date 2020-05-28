@@ -2,12 +2,10 @@ package com.reedelk.mongodb.internal.commons;
 
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
 import com.reedelk.runtime.api.exception.PlatformException;
-import com.reedelk.runtime.api.message.content.DataRow;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -38,11 +36,6 @@ public class DocumentUtils {
             checkLeftIsStringTypeOrThrow(queryPair);
             String key = (String) queryPair.left();
             return new Document(key, queryPair.right());
-
-        } else if (documentObject instanceof DataRow) {
-            DataRow<Serializable> dataRow = (DataRow<Serializable>) documentObject;
-            Map<String, Object> dataAsMap = new HashMap<>(dataRow.asMap());
-            return new Document(dataAsMap);
 
         } else {
             throw exception.get();

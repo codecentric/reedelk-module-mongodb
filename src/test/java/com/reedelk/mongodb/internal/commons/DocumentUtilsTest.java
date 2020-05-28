@@ -1,8 +1,6 @@
 package com.reedelk.mongodb.internal.commons;
 
 import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
-import com.reedelk.runtime.api.message.content.DataRow;
-import com.reedelk.runtime.api.message.content.DefaultDataRow;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
@@ -10,28 +8,11 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.testcontainers.shaded.com.google.common.collect.ImmutableMap.of;
 
 class DocumentUtilsTest {
-
-    @Test
-    void shouldCreateDocumentFromDataRow() {
-        // Given
-        DataRow<Serializable> dataRow =
-                new DefaultDataRow(asList("column1", "column2"), asList("One", 2));
-
-        // When
-        Document document = DocumentUtils.from(dataRow, Unsupported.documentType(dataRow));
-
-        // Then
-        assertThat(document.keySet()).contains("column1", "column2");
-        assertThat(document.get("column1")).isEqualTo("One");
-        assertThat(document.get("column2")).isEqualTo(2);
-        assertThat(document).hasSize(2);
-    }
 
     @Test
     void shouldCreateDocumentFromString() {
