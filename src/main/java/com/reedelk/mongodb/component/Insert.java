@@ -58,6 +58,7 @@ public class Insert implements ProcessorSync {
     private ConnectionConfiguration connection;
 
     @Property("Collection")
+    @Mandatory
     @Hint("MyCollection")
     @Example("MyCollection")
     @Description("Sets the name of the collection to be used for the insert operation.")
