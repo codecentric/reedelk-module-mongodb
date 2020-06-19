@@ -1,7 +1,7 @@
 [
   {
-    "version": "0.9.1-SNAPSHOT",
-    "date": "14/4/2020",
-    "release-notes": ""
+    "version": "1.0.0",
+    "date": "22/6/2020",
+    "release-notes": "<ul><li>First module-mongodb release.</li><ul>"
   }
 ]
