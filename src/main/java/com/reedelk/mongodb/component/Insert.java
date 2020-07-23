@@ -66,7 +66,7 @@ public class Insert implements ProcessorSync {
 
     @Property("Insert Document")
     @InitValue("#[message.payload()]")
-    @DefaultValue("#[message.payload()")
+    @DefaultValue("#[message.payload()]")
     @Description("Sets the document to be inserted into the database. " +
             "The input document can be a static or a dynamic expression. " +
             "The input document could be a JSON string, Map, Pair or DataRow (Insert One). " +
