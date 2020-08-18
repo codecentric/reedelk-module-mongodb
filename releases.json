@@ -1,5 +1,10 @@
 [
   {
+    "version": "1.0.1",
+    "date": "18/8/2020",
+    "release-notes": "<ul><li>Runtime v1.0.1 release.</li><ul>"
+  },
+  {
     "version": "1.0.0",
     "date": "22/6/2020",
     "release-notes": "<ul><li>First module-mongodb release.</li><ul>"
