@@ -8,8 +8,7 @@ import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.attribute.UpdateAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
-import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
-import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
+import com.reedelk.mongodb.internal.exception.UpdateException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.converter.ConverterService;
@@ -111,11 +110,11 @@ public class Update implements ProcessorSync {
         MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
         Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
-                .orElseThrow(() -> new MongoDBUpdateException(UPDATE_QUERY_NULL.format(query.value())));
+                .orElseThrow(() -> new UpdateException(UPDATE_QUERY_NULL.format(query.value())));
 
         Object toUpdate =
                 evaluateOrUsePayloadWhenEmpty(document, scriptService, flowContext, message,
-                        () -> new MongoDBDocumentException(UPDATE_DOCUMENT_EMPTY.format(document.value())));
+                        () -> new UpdateException(UPDATE_DOCUMENT_EMPTY.format(document.value())));
 
         UpdateResult updateResult;
 

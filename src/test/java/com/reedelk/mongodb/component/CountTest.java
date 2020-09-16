@@ -1,7 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBCountException;
+import com.reedelk.mongodb.internal.exception.CountException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -89,8 +89,8 @@ class CountTest extends AbstractMongoDBTest {
                 .evaluate(filter, context, input);
 
         // When
-        MongoDBCountException thrown =
-                assertThrows(MongoDBCountException.class, () -> component.apply(context, input));
+        CountException thrown =
+                assertThrows(CountException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)

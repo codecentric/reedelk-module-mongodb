@@ -9,7 +9,7 @@ import com.reedelk.mongodb.internal.attribute.FindAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.ObjectIdUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
-import com.reedelk.mongodb.internal.exception.MongoDBFindException;
+import com.reedelk.mongodb.internal.exception.FindException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.converter.ConverterService;
@@ -125,7 +125,7 @@ public class Find implements ProcessorSync {
             // string, a Map or a Pair type. If the filter is not one of these objects
             // we throw an exception.
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
-                    .orElseThrow(() -> new MongoDBFindException(FIND_QUERY_NULL.format(query.value())));
+                    .orElseThrow(() -> new FindException(FIND_QUERY_NULL.format(query.value())));
 
             Document findQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
             documents = mongoDatabaseCollection.find(findQuery);

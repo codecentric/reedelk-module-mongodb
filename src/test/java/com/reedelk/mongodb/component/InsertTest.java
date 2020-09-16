@@ -1,8 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
-import com.reedelk.mongodb.internal.exception.MongoDBInsertException;
+import com.reedelk.mongodb.internal.exception.DocumentException;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
 import com.reedelk.runtime.api.message.content.Pair;
@@ -183,7 +182,7 @@ class InsertTest extends AbstractMongoDBTest {
         Message input = MessageBuilder.get(TestComponent.class).empty().build();
 
         // When
-        MongoDBDocumentException thrown = assertThrows(MongoDBDocumentException.class,
+        DocumentException thrown = assertThrows(DocumentException.class,
                 () -> component.apply(context, input));
 
         // Then

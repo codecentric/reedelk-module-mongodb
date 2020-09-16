@@ -1,9 +1,8 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
-import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
-import com.reedelk.mongodb.internal.exception.MongoDBUpdateException;
+import com.reedelk.mongodb.internal.exception.DocumentException;
+import com.reedelk.mongodb.internal.exception.UpdateException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
@@ -92,8 +91,8 @@ class UpdateTest extends AbstractMongoDBTest {
                 .evaluate(document, context, input);
 
         // When
-        MongoDBDocumentException thrown =
-                assertThrows(MongoDBDocumentException.class, () -> component.apply(context, input));
+        DocumentException thrown =
+                assertThrows(DocumentException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)
@@ -121,8 +120,8 @@ class UpdateTest extends AbstractMongoDBTest {
                 .evaluate(filter, context, input);
 
         // When
-        MongoDBUpdateException thrown =
-                assertThrows(MongoDBUpdateException.class, () -> component.apply(context, input));
+        UpdateException thrown =
+                assertThrows(UpdateException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)

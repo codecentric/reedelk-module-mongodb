@@ -1,6 +1,6 @@
 package com.reedelk.mongodb.internal.commons;
 
-import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.mongodb.internal.exception.QueryException;
 import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.exception.PlatformException;
 import com.reedelk.runtime.api.message.content.Pair;
@@ -48,7 +48,7 @@ public class DocumentUtils {
     private static void checkLeftIsStringTypeOrThrow(Pair<Serializable,Serializable> pair) {
         if (!(pair.left() instanceof String)) {
             String error = PAIR_LEFT_NOT_STRING.format(Utils.classNameOrNull(pair.left()));
-            throw new MongoDBQueryException(error);
+            throw new QueryException(error);
         }
     }
 
@@ -56,7 +56,7 @@ public class DocumentUtils {
         boolean areAllStrings = query.keySet().stream().allMatch(key -> key instanceof String);
         if (!areAllStrings) {
             String error = MAP_KEYS_NOT_STRING.format();
-            throw new MongoDBQueryException(error);
+            throw new QueryException(error);
         }
     }
 }

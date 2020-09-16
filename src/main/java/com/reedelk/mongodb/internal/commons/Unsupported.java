@@ -1,7 +1,7 @@
 package com.reedelk.mongodb.internal.commons;
 
-import com.reedelk.mongodb.internal.exception.MongoDBDocumentException;
-import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.mongodb.internal.exception.DocumentException;
+import com.reedelk.mongodb.internal.exception.QueryException;
 
 import java.util.function.Supplier;
 
@@ -13,17 +13,17 @@ public class Unsupported {
     private Unsupported() {
     }
 
-    public static Supplier<MongoDBQueryException> queryType(Object query){
+    public static Supplier<QueryException> queryType(Object query){
         return () -> {
             String error = QUERY_TYPE_NOT_SUPPORTED.format(Utils.classNameOrNull(query));
-            return new MongoDBQueryException(error);
+            return new QueryException(error);
         };
     }
 
-    public static Supplier<MongoDBDocumentException> documentType(Object document){
+    public static Supplier<DocumentException> documentType(Object document){
         return () -> {
             String error = DOCUMENT_NOT_SUPPORTED.format(Utils.classNameOrNull(document));
-            return new MongoDBDocumentException(error);
+            return new DocumentException(error);
         };
     }
 }

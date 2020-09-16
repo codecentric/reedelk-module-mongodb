@@ -1,7 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBDeleteException;
+import com.reedelk.mongodb.internal.exception.DeleteException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageAttributes;
@@ -132,8 +132,8 @@ class DeleteTest extends AbstractMongoDBTest {
                 .evaluate(filter, context, input);
 
         // When
-        MongoDBDeleteException thrown =
-                assertThrows(MongoDBDeleteException.class, () -> component.apply(context, input));
+        DeleteException thrown =
+                assertThrows(DeleteException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown)

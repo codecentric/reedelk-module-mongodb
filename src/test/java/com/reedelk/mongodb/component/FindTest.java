@@ -1,7 +1,7 @@
 package com.reedelk.mongodb.component;
 
 import com.reedelk.mongodb.internal.ClientFactory;
-import com.reedelk.mongodb.internal.exception.MongoDBFindException;
+import com.reedelk.mongodb.internal.exception.FindException;
 import com.reedelk.runtime.api.commons.ModuleContext;
 import com.reedelk.runtime.api.message.Message;
 import com.reedelk.runtime.api.message.MessageBuilder;
@@ -169,8 +169,8 @@ class FindTest extends AbstractMongoDBTest {
                 .evaluate(filter, context, input);
 
         // When
-        MongoDBFindException thrown =
-                assertThrows(MongoDBFindException.class, () -> component.apply(context, input));
+        FindException thrown =
+                assertThrows(FindException.class, () -> component.apply(context, input));
 
         // Then
         assertThat(thrown).hasMessage("The Find query was null. " +

@@ -7,7 +7,7 @@ import com.reedelk.mongodb.internal.ClientFactory;
 import com.reedelk.mongodb.internal.attribute.CountAttributes;
 import com.reedelk.mongodb.internal.commons.DocumentUtils;
 import com.reedelk.mongodb.internal.commons.Unsupported;
-import com.reedelk.mongodb.internal.exception.MongoDBCountException;
+import com.reedelk.mongodb.internal.exception.CountException;
 import com.reedelk.runtime.api.annotation.*;
 import com.reedelk.runtime.api.component.ProcessorSync;
 import com.reedelk.runtime.api.converter.ConverterService;
@@ -86,7 +86,7 @@ public class Count implements ProcessorSync {
         if (isNotNullOrBlank(query)) {
 
             Object evaluatedQuery = scriptService.evaluate(query, flowContext, message)
-                    .orElseThrow(() -> new MongoDBCountException(COUNT_QUERY_NULL.format(query.value())));
+                    .orElseThrow(() -> new CountException(COUNT_QUERY_NULL.format(query.value())));
 
             Document countQuery = DocumentUtils.from(converterService, evaluatedQuery, Unsupported.queryType(evaluatedQuery));
 

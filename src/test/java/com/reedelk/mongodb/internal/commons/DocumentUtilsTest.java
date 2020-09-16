@@ -1,6 +1,6 @@
 package com.reedelk.mongodb.internal.commons;
 
-import com.reedelk.mongodb.internal.exception.MongoDBQueryException;
+import com.reedelk.mongodb.internal.exception.QueryException;
 import com.reedelk.runtime.api.converter.ConverterService;
 import com.reedelk.runtime.api.message.content.Pair;
 import org.bson.Document;
@@ -69,7 +69,7 @@ class DocumentUtilsTest {
         int wrongTypeFilter = 2;
 
         // When
-        MongoDBQueryException thrown = assertThrows(MongoDBQueryException.class,
+        QueryException thrown = assertThrows(QueryException.class,
                 () -> DocumentUtils.from(converterService, wrongTypeFilter, Unsupported.queryType(wrongTypeFilter)));
 
         // Then
