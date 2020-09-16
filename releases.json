@@ -1,7 +1,7 @@
 [
   {
     "version": "1.0.5",
-    "date": "17/9/2020",
+    "date": "16/9/2020",
     "release-notes": "<ul><li>misc: renamed exception classes for consistency.</li></ul>"
   },
   {
