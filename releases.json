@@ -1,5 +1,10 @@
 [
   {
+    "version": "1.0.5",
+    "date": "17/9/2020",
+    "release-notes": "<ul><li>misc: renamed exception classes for consistency.</li></ul>"
+  },
+  {
     "version": "1.0.4",
     "date": "1/9/2020",
     "release-notes": "<ul><li>Runtime v1.0.4 release.</li><ul>"
