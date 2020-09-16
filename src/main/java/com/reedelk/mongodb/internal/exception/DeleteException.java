@@ -2,9 +2,9 @@ package com.reedelk.mongodb.internal.exception;
 
 import com.reedelk.runtime.api.exception.PlatformException;
 
-public class MongoDBDocumentException extends PlatformException {
+public class DeleteException extends PlatformException {
 
-    public MongoDBDocumentException(String message) {
+    public DeleteException(String message) {
         super(message);
     }
 }

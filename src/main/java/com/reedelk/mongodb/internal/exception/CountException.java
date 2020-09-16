@@ -2,9 +2,9 @@ package com.reedelk.mongodb.internal.exception;
 
 import com.reedelk.runtime.api.exception.PlatformException;
 
-public class MongoDBCountException extends PlatformException {
+public class CountException extends PlatformException {
 
-    public MongoDBCountException(String message) {
+    public CountException(String message) {
         super(message);
     }
 }
